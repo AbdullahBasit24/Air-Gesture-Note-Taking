@@ -26,10 +26,11 @@
 
   .app{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;height:100dvh;min-height:560px;gap:0;}
 
-  /* Top bar */
-  header{grid-column:1;display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid var(--hairline);}
-  .wordmark{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;letter-spacing:0.2px;display:flex;align-items:center;gap:8px;}
-  .status-pill{display:flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.5px;color:var(--text-mute);background:var(--panel);border:1px solid var(--hairline);padding:4px 10px;border-radius:16px;}
+  /* Top bar - compact */
+  header{grid-column:1;display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid var(--hairline);gap:16px;}
+  .wordmark{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;letter-spacing:0.2px;display:flex;align-items:center;gap:8px;flex-shrink:0;}
+  .header-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;flex:1;justify-content:center;}
+  .status-pill{display:flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.5px;color:var(--text-mute);background:var(--panel);border:1px solid var(--hairline);padding:4px 10px;border-radius:16px;flex-shrink:0;}
   .status-pill.locked{color:var(--focus-green);border-color:var(--focus-green-dim);}
 
   /* Viewfinder */
@@ -72,6 +73,8 @@
   .btn.primary:hover{filter:brightness(1.08);}
   .btn.ghost{background:transparent;}
   .btn.toggle.active{background:var(--focus-green-dim);border-color:var(--focus-green);color:#0B5C3B;font-weight:600;}
+  .btn.camera-toggle{background:#1E4FB0;color:#fff;border:none;font-weight:600;}
+  .btn.camera-toggle:hover{filter:brightness(1.1);}
   .gesture-hover{outline:3px solid rgba(20,125,82,.38);outline-offset:2px;transform:translateY(-1px);}
 
   .thickness-group{display:flex;align-items:center;gap:6px;}
@@ -112,8 +115,11 @@
   .word-toast.show{opacity:1;transform:translate(-50%,0);}
 
   /* Filmstrip footer */
-  .filmstrip{grid-column:1;border-top:1px solid var(--hairline);padding:10px 28px;display:flex;gap:14px;align-items:center;overflow-x:auto;min-height:72px;}
+  .filmstrip{grid-column:1;border-top:1px solid var(--hairline);padding:10px 28px;display:flex;justify-content:space-between;align-items:center;overflow-x:auto;min-height:72px;}
+  .filmstrip-left{display:flex;gap:14px;align-items:center;}
   .filmstrip h5{font-family:'Space Grotesk',sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-faint);margin:0;white-space:nowrap;font-weight:600;}
+  .filmstrip-right{display:flex;gap:16px;align-items:center;}
+  .guideline-item{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-mute);white-space:nowrap;}
   .note-card{flex:0 0 auto;width:110px;height:78px;background:var(--paper);border-radius:4px;position:relative;box-shadow:0 6px 14px rgba(30,41,59,.16);cursor:pointer;overflow:hidden;transition:transform .15s;}
   .note-card:hover{transform:translateY(-3px);}
   .note-card svg{position:absolute;inset:0;width:100%;height:100%;}
@@ -139,7 +145,39 @@
 <div class="app">
 
   <header>
-    <div class="wordmark">Air canvas</div>
+    <div class="wordmark">Gesture Draw</div>
+    <div class="header-controls">
+      <div class="tool-group" id="swatches">
+        <div class="swatch active" data-c="#2B2B2B" style="background:#2B2B2B"></div>
+        <div class="swatch" data-c="#1E4FB0" style="background:#1E4FB0"></div>
+        <div class="swatch" data-c="#B0271E" style="background:#B0271E"></div>
+        <div class="swatch" data-c="#1E7A4C" style="background:#1E7A4C"></div>
+      </div>
+      <div class="tool-group">
+        <button class="btn ghost" id="undoBtn">Undo</button>
+        <button class="btn ghost" id="clearBtn">Clear</button>
+        <button class="btn toggle" id="eraserBtn" title="Use a pinch to erase ink">Eraser</button>
+      </div>
+      <div class="tool-group thickness-group">
+        <label class="thickness-label" for="thicknessSlider">Thickness</label>
+        <input type="range" id="thicknessSlider" min="1" max="10" step="0.5" value="2.4">
+        <span class="thickness-value" id="thicknessValue">2.4px</span>
+      </div>
+      <div class="tool-group zoom-group">
+        <button class="btn ghost" id="zoomOutBtn" title="Zoom out">−</button>
+        <span class="zoom-value" id="zoomValue">100%</span>
+        <button class="btn ghost" id="zoomInBtn" title="Zoom in">+</button>
+      </div>
+      <div class="tool-group">
+        <button class="btn camera-toggle" id="cameraToggleBtn">Start Camera</button>
+      </div>
+      <div class="tool-group">
+        <button class="btn" id="saveBtn">Save to notes</button>
+      </div>
+      <div class="tool-group">
+        <button class="btn toggle" id="modeSwitchBtn">Thumb-Index Mode</button>
+      </div>
+    </div>
     <div class="status-pill" id="statusPill"><span id="statusText">SEARCHING FOR HAND</span></div>
   </header>
 
@@ -150,46 +188,8 @@
       <div class="bracket bl"></div>
       <div class="bracket br"></div>
 
-      <!-- The board fills the entire reachable gesture area. Every control
-           floats on top of it as compact, non-overlapping cards. -->
       <div class="board-wrap">
         <canvas id="board"></canvas>
-
-        <div class="dock">
-          <div class="toolbar-row">
-            <div class="tool-group" id="swatches">
-              <div class="swatch active" data-c="#2B2B2B" style="background:#2B2B2B"></div>
-              <div class="swatch" data-c="#1E4FB0" style="background:#1E4FB0"></div>
-              <div class="swatch" data-c="#B0271E" style="background:#B0271E"></div>
-              <div class="swatch" data-c="#1E7A4C" style="background:#1E7A4C"></div>
-            </div>
-            <div class="tool-group">
-              <button class="btn ghost" id="undoBtn">Undo</button>
-              <button class="btn ghost" id="clearBtn">Clear</button>
-              <button class="btn toggle" id="eraserBtn" title="Use a pinch to erase ink">Eraser</button>
-            </div>
-            <div class="tool-group thickness-group">
-              <label class="thickness-label" for="thicknessSlider">Thickness</label>
-              <input type="range" id="thicknessSlider" min="1" max="10" step="0.5" value="2.4">
-              <span class="thickness-value" id="thicknessValue">2.4px</span>
-            </div>
-            <div class="tool-group zoom-group">
-              <button class="btn ghost" id="zoomOutBtn" title="Zoom out">−</button>
-              <span class="zoom-value" id="zoomValue">100%</span>
-              <button class="btn ghost" id="zoomInBtn" title="Zoom in">+</button>
-            </div>
-            <div class="tool-group">
-              <button class="btn" id="cameraBtn">Start camera</button>
-              <button class="btn ghost" id="cameraOffBtn" disabled>Camera off</button>
-            </div>
-            <div class="tool-group">
-              <button class="btn" id="saveBtn">Save to notes</button>
-            </div>
-            <div class="tool-group">
-              <button class="btn toggle" id="modeSwitchBtn">Thumb-Index Mode</button>
-            </div>
-          </div>
-        </div>
 
         <div class="side-panel">
           <div class="preview">
@@ -212,8 +212,15 @@
   </div>
 
   <div class="filmstrip">
-    <h5>Notes</h5>
-    <div class="note-card empty" id="addCard">+</div>
+    <div class="filmstrip-left">
+      <h5>Notes</h5>
+      <div class="note-card empty" id="addCard">+</div>
+    </div>
+    <div class="filmstrip-right">
+      <div class="guideline-item">1. Turn on camera</div>
+      <div class="guideline-item">2. Pinch thumb+index to draw</div>
+      <div class="guideline-item">3. Or hold spacebar + move index</div>
+    </div>
   </div>
 
 </div>
@@ -236,8 +243,8 @@ let inkColor = '#2B2B2B';
 let eraserActive = false;
 let textElements = [];
 let actions = []; // ordered log of {type:'stroke'|'text', item} so Undo removes the right thing
-const MIN_STROKE_SPACING_PX = 2.0;
-const STROKE_SIMPLIFY_TOLERANCE_PX = 1.8;
+const MIN_STROKE_SPACING_PX = 2.2;
+const STROKE_SIMPLIFY_TOLERANCE_PX = 2.0;
 const INK_WIDTH = 2.4; // default/fallback thickness
 let inkThickness = INK_WIDTH; // live value, controlled by the thickness slider
 const ERASER_WIDTH = 24;
@@ -553,8 +560,7 @@ const hudFps = document.getElementById('hudFps');
 const video = document.getElementById('webcam');
 const overlay = document.getElementById('handOverlay');
 const overlayCtx = overlay.getContext('2d');
-const cameraBtn = document.getElementById('cameraBtn');
-const cameraOffBtn = document.getElementById('cameraOffBtn');
+const cameraToggleBtn = document.getElementById('cameraToggleBtn');
 const cameraEmpty = document.getElementById('cameraEmpty');
 const hint = document.getElementById('hint');
 const tip = document.getElementById('fingertip');
@@ -619,8 +625,8 @@ class OneEuroFilter{
   reset(){ this.xPrev = null; this.dxPrev = 0; this.tPrev = null; }
 }
 // Balanced for accuracy and responsiveness
-const filterX = new OneEuroFilter({minCutoff:0.55, beta:0.035});
-const filterY = new OneEuroFilter({minCutoff:0.55, beta:0.035});
+const filterX = new OneEuroFilter({minCutoff:0.5, beta:0.04});
+const filterY = new OneEuroFilter({minCutoff:0.5, beta:0.04});
 
 function setTrackingState(locked, message, state){
   vf.classList.toggle('locked', locked);
@@ -712,9 +718,9 @@ function boardPoint(landmark){
   if (distance <= CURSOR_DEADBAND_PX) return cursorPoint;
   // Tuned for accuracy
   const gain =
-    distance < 4 ? .55 :
-    distance < 12 ? .8 :
-    distance < 25 ? .95 :
+    distance < 5 ? .6 :
+    distance < 15 ? .85 :
+    distance < 30 ? .95 :
     1;
   cursorPoint = {
     x:Math.max(0, Math.min(rect.width, cursorPoint.x + dx * gain)),
@@ -738,7 +744,7 @@ function showCursor(point, pinching){
 
 function controlAt(point){
   const element = document.elementFromPoint(point.x, point.y);
-  const control = element?.closest('.dock button, .swatch');
+  const control = element?.closest('header button, .swatch');
   return control && !control.disabled ? control : null;
 }
 
@@ -976,9 +982,9 @@ async function startCamera(){
     setTrackingState(false, 'CAMERA NOT SUPPORTED', 'ERROR');
     return;
   }
-  cameraBtn.disabled = true;
+  cameraToggleBtn.disabled = true;
   const session = ++cameraSession;
-  cameraBtn.textContent = 'Starting camera…';
+  cameraToggleBtn.textContent = 'Starting camera…';
   setTrackingState(false, 'REQUESTING CAMERA', 'WAITING');
   try {
     const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user', width:{ideal:1280}, height:{ideal:720}}, audio:false});
@@ -994,8 +1000,8 @@ async function startCamera(){
     hands.onResults(drawResults);
     cameraRunning = true;
     cameraEmpty.classList.add('hidden');
-    cameraOffBtn.disabled = false;
-    cameraBtn.textContent = 'Camera active';
+    cameraToggleBtn.disabled = false;
+    cameraToggleBtn.textContent = 'Stop Camera';
     hint.textContent = 'show one hand to the camera';
     async function detectFrame(now){
       if (!cameraRunning || session !== cameraSession) return;
@@ -1008,14 +1014,13 @@ async function startCamera(){
   } catch (error) {
     if (session !== cameraSession) return;
     console.error('Unable to start the webcam:', error);
-    cameraBtn.disabled = false;
-    cameraBtn.textContent = 'Try camera again';
+    cameraToggleBtn.disabled = false;
+    cameraToggleBtn.textContent = 'Try camera again';
     setTrackingState(false, 'CAMERA ACCESS NEEDED', 'ERROR');
     hint.textContent = 'allow webcam access, then try again';
   }
 }
 
-cameraBtn.addEventListener('click', startCamera);
 function stopCamera(){
   cameraSession++;
   cameraRunning = false;
@@ -1041,16 +1046,22 @@ function stopCamera(){
   const rect = overlay.getBoundingClientRect();
   overlayCtx.clearRect(0, 0, rect.width, rect.height);
   cameraEmpty.classList.remove('hidden');
-  cameraBtn.disabled = false;
-  cameraBtn.textContent = 'Start camera';
-  cameraOffBtn.disabled = true;
+  cameraToggleBtn.disabled = false;
+  cameraToggleBtn.textContent = 'Start Camera';
   hudFps.textContent = '--';
   hudDist.textContent = '--';
   hint.textContent = 'camera is off';
   showGuidance('');
   setTrackingState(false, 'CAMERA OFF', 'IDLE');
 }
-cameraOffBtn.addEventListener('click', stopCamera);
+
+cameraToggleBtn.addEventListener('click', () => {
+  if (cameraRunning) {
+    stopCamera();
+  } else {
+    startCamera();
+  }
+});
 window.addEventListener('resize', resizeOverlay);
 
 document.getElementById('saveBtn').addEventListener('click', ()=>{
