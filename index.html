@@ -138,7 +138,7 @@
   .mobile-popup{
     position:fixed;
     top:0;left:0;right:0;bottom:0;
-    background:rgba(0,0,0,0.75);
+    background:rgba(0,0,0,0.85);
     display:flex;
     align-items:center;
     justify-content:center;
@@ -146,27 +146,50 @@
   }
   .mobile-popup-content{
     background:white;
-    padding:28px;
-    border-radius:12px;
-    max-width:90%;
-    width:420px;
+    padding:40px 32px;
+    border-radius:20px;
+    max-width:95%;
+    width:600px;
     text-align:center;
+    box-shadow:0 20px 60px rgba(0,0,0,0.3);
   }
   .mobile-popup-content h2{
-    margin:0 0 16px 0;
+    margin:0 0 20px 0;
     color:var(--text);
+    font-size:28px;
+  }
+  .rotation-icon{
+    margin:20px 0;
+    display:flex;
+    justify-content:center;
+  }
+  .rotation-arrow{
+    transform-origin:50px 50px;
+    animation:rotateArrow 2s infinite ease-in-out;
+  }
+  @keyframes rotateArrow{
+    0%{transform:rotate(0deg);}
+    50%{transform:rotate(90deg);}
+    100%{transform:rotate(0deg);}
   }
   .mobile-popup-content p{
-    margin:8px 0;
+    margin:12px 0;
     color:var(--text-mute);
-    font-size:15px;
+    font-size:17px;
+    line-height:1.5;
+  }
+  .mobile-popup-content button{
+    margin-top:24px;
+    font-size:17px;
+    padding:10px 24px;
+    min-height:40px;
   }
 
   /* Mobile Responsive Styles */
   @media (max-width:850px){
-    .app{grid-template-columns:1fr;grid-template-rows:auto minmax(340px,1fr) auto;height:auto;min-height:100dvh;}
+    .app{grid-template-columns:1fr;grid-template-rows:auto 1fr auto;height:100dvh;min-height:100dvh;}
     header,.filmstrip{grid-column:1;}
-    .stage{min-height:0;padding:10px;}
+    .stage{min-height:0;padding:8px;}
     .dock{max-width:calc(100% - 28px);}
     .side-panel{width:96px;}
     .hud{font-size:9px;padding:6px 8px;}
@@ -184,26 +207,28 @@
 
   /* Mobile Landscape Specific (16:9, 18:9, 20:9, 21:9) */
   @media (max-width:1024px) and (orientation:landscape){
+    /* Make app fit full screen */
+    .app{grid-template-columns:1fr;grid-template-rows:auto 1fr auto;height:100dvh;}
     /* Make header even more compact in landscape */
-    header{padding:6px 12px;}
-    .wordmark{font-size:13px;}
+    header{padding:4px 12px;}
+    .wordmark{font-size:12px;}
     .header-controls{gap:6px;}
-    .btn{min-height:24px;padding:3px 6px;font-size:10px;}
-    .swatch{width:16px;height:16px;}
-    .thickness-group label, .thickness-value{font-size:7px;}
-    #thicknessSlider{width:50px;}
-    .status-pill{font-size:9px;padding:3px 6px;}
-    /* Reduce padding around viewfinder for more space */
-    .stage{padding:4px;}
-    /* Make side panel even smaller */
-    .side-panel{width:80px;gap:4px;}
+    .btn{min-height:22px;padding:2px 6px;font-size:9px;}
+    .swatch{width:14px;height:14px;}
+    .thickness-group label, .thickness-value{font-size:6px;}
+    #thicknessSlider{width:40px;}
+    .status-pill{font-size:8px;padding:2px 5px;}
+    /* Minimal padding for stage */
+    .stage{padding:2px;}
+    /* Make side panel smaller */
+    .side-panel{width:70px;gap:3px;}
     .preview{aspect-ratio:4/3;}
-    .hud{padding:4px 6px;font-size:8px;}
-    /* Smaller filmstrip */
-    .filmstrip{padding:6px 12px;min-height:60px;}
-    .filmstrip h5{font-size:10px;}
-    .note-card{width:90px;height:64px;}
-    .filmstrip-right .guideline-item{font-size:7px;}
+    .hud{padding:3px 5px;font-size:7px;}
+    /* Smallest filmstrip possible */
+    .filmstrip{padding:4px 12px;min-height:50px;}
+    .filmstrip h5{font-size:9px;}
+    .note-card{width:80px;height:56px;}
+    .filmstrip-right .guideline-item{font-size:6px;}
   }
 
   @media (max-width:520px){
@@ -291,7 +316,7 @@
     <div class="filmstrip-right">
       <div class="guideline-item">1. Turn on camera</div>
       <div class="guideline-item">2. Pinch thumb+index to draw</div>
-      <div class="guideline-item">3. Or hold spacebar + move index</div>
+      <div class="guideline-item">3. Or hold Enter + move index</div>
     </div>
   </div>
 
@@ -301,8 +326,15 @@
 <div id="mobilePopup" class="mobile-popup">
   <div class="mobile-popup-content">
     <h2>Better on Desktop/Laptop!</h2>
+    <div class="rotation-icon">
+      <svg viewBox="0 0 100 100" width="100" height="100">
+        <rect x="20" y="10" width="60" height="80" rx="8" fill="none" stroke="#2B2B2B" stroke-width="4"/>
+        <circle cx="50" cy="85" r="4" fill="#2B2B2B"/>
+        <path class="rotation-arrow" d="M 35 35 Q 50 20 65 35 L 58 42 L 63 35 L 58 28" fill="none" stroke="#1E4FB0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
     <p>For the best air-drawing experience, use this website on a laptop or desktop computer with a webcam.</p>
-    <p>On your phone, rotate to landscape mode to try it out.</p>
+    <p><strong>On your phone:</strong> Rotate your device to landscape mode to try it out!</p>
     <button id="closeMobilePopup" class="btn btn-primary">Got it</button>
   </div>
 </div>
@@ -491,8 +523,8 @@ document.getElementById('modeSwitchBtn').addEventListener('click', ()=>{
 });
 
 document.addEventListener('keydown', (e)=>{
-  if (e.code === 'Space') {
-    e.preventDefault(); // Always prevent page scroll, even on autorepeat
+  if (e.code === 'Enter') {
+    e.preventDefault(); // Prevent form submission/other default actions
     if (!spacebarHeld) {
       spacebarHeld = true;
     }
@@ -500,7 +532,7 @@ document.addEventListener('keydown', (e)=>{
 });
 
 document.addEventListener('keyup', (e)=>{
-  if (e.code === 'Space') {
+  if (e.code === 'Enter') {
     e.preventDefault();
     if (spacebarHeld) {
       spacebarHeld = false;
@@ -676,7 +708,7 @@ let strokeFrozen = false; // true once soft-release has trimmed the tail of the 
 let smoothedPinchDistance = null;
 let lastHandSeenAt = 0, cameraSession = 0, cursorPoint = null;
 let currentMode = 'thumb-index'; // 'thumb-index' or 'keyboard-index'
-let spacebarHeld = false;
+let enterHeld = false;
 
 // One Euro Filter: a low-pass filter whose cutoff adapts to speed of motion,
 // so a still fingertip is heavily smoothed (no jitter) while a fast stroke
@@ -978,26 +1010,22 @@ function updateGesture(point, dashboardCursor, pinchDistance, rawPinchDistance){
       }
     }
   } else {
-    // Keyboard + index finger mode - NO PINCH/STROKE FROZEN interference!
-    // Reset pinch-related vars when in this mode
-    pinchLatched = false;
-    pinchFrames = 0;
-    releaseFrames = 0;
-    strokeFrozen = false;
+    // Keyboard + index finger mode - OPTIMIZED!
     if (spacebarHeld) {
       if (!drawing && isOverBoard(dashboardCursor)) {
         // Start drawing
         drawing = true;
-        currentStroke = [{...point}];
-        lastDrawPoint = {...point};
+        currentStroke = [{x: point.x, y: point.y}];
+        lastDrawPoint = {x: point.x, y: point.y};
         redraw();
-        if (textModeActive) clearTimeout(wordTimer);
       } else if (drawing) {
-        // Continue drawing
-        const movement = Math.hypot(point.x - lastDrawPoint.x, point.y - lastDrawPoint.y);
-        if (movement > MIN_STROKE_SPACING_PX) {
-          currentStroke.push({...point});
-          lastDrawPoint = {...point};
+        // Continue drawing - optimized distance calculation
+        const dx = point.x - lastDrawPoint.x;
+        const dy = point.y - lastDrawPoint.y;
+        const movementSq = dx*dx + dy*dy; // Avoid sqrt for performance!
+        if (movementSq > MIN_STROKE_SPACING_PX * MIN_STROKE_SPACING_PX) {
+          currentStroke.push({x: point.x, y: point.y});
+          lastDrawPoint = {x: point.x, y: point.y};
           redraw();
         }
       }
@@ -1021,20 +1049,23 @@ function drawResults(results){
       drawLandmarks(overlayCtx, hand, {color:'#EDE6D6', fillColor:'#4CFF9E', lineWidth:1.4, radius:3});
     });
     const hand = landmarks[0];
-    const rawPinchDistance = landmarkDistance2D(hand[4], hand[8]) / landmarkDistance2D(hand[0], hand[9]);
-    const pinchDistance = smoothPinchDistance(rawPinchDistance);
+    let rawPinchDistance = null;
+    let pinchDistance = null;
+    // Skip pinch distance calculations in keyboard mode for better performance
+    if (currentMode === 'thumb-index') {
+      rawPinchDistance = landmarkDistance2D(hand[4], hand[8]) / landmarkDistance2D(hand[0], hand[9]);
+      pinchDistance = smoothPinchDistance(rawPinchDistance);
+      hudDist.textContent = pinchDistance.toFixed(3);
+    }
     const point = boardPoint(hand[8]);
     const dashboardCursor = dashboardPoint(point);
     const canvasRect = canvas.getBoundingClientRect();
-    // canvasRect reflects the current zoomed size; dividing by zoomLevel
-    // converts back to the canvas's native drawing coordinate space.
     const inkPoint = {
       x:(dashboardCursor.x - canvasRect.left) / zoomLevel,
       y:(dashboardCursor.y - canvasRect.top) / zoomLevel
     };
     updateGesture(inkPoint, dashboardCursor, pinchDistance, rawPinchDistance);
     showCursor(dashboardCursor, drawing || pinchLatched);
-    hudDist.textContent = pinchDistance.toFixed(3);
     lastHandSeenAt = performance.now();
     const isDrawing = drawing;
     const isSelecting = pinchLatched && Boolean(gestureTarget);
@@ -1042,7 +1073,7 @@ function drawResults(results){
     if (currentMode === 'thumb-index') {
       hint.textContent = isDrawing ? 'pinch held - drawing' : isSelecting ? 'pinch selected dashboard control' : 'pinch index finger and thumb to write or select';
     } else {
-      hint.textContent = isDrawing ? 'spacebar held - drawing with index finger' : 'hold spacebar and use index finger to write';
+      hint.textContent = isDrawing ? 'Enter held - drawing with index finger' : 'hold Enter and use index finger to write';
     }
     showGuidance(handGuidance(hand));
   } else {
@@ -1175,15 +1206,27 @@ function isMobileDevice() {
          (window.innerWidth <= 1024 && window.innerHeight <= 1024 && (navigator.userAgent.includes('Mobile') || navigator.userAgent.includes('Tablet')));
 }
 
+function isLandscape() {
+  return window.innerWidth > window.innerHeight;
+}
+
 const mobilePopup = document.getElementById('mobilePopup');
 const closeMobilePopupBtn = document.getElementById('closeMobilePopup');
 
-// Show pop-up on load if mobile
-if (isMobileDevice()) {
-  mobilePopup.style.display = 'flex';
-} else {
-  mobilePopup.style.display = 'none';
+// Show pop-up on load if mobile and portrait
+function checkPopupVisibility() {
+  if (isMobileDevice()) {
+    if (isLandscape()) {
+      mobilePopup.style.display = 'none';
+    } else {
+      mobilePopup.style.display = 'flex';
+    }
+  } else {
+    mobilePopup.style.display = 'none';
+  }
 }
+
+checkPopupVisibility();
 
 // Close pop-up button
 closeMobilePopupBtn.addEventListener('click', () => {
@@ -1191,18 +1234,10 @@ closeMobilePopupBtn.addEventListener('click', () => {
 });
 
 // Handle orientation changes on mobile
-window.addEventListener('orientationchange', () => {
-  if (isMobileDevice()) {
-    // If user rotates back to portrait, maybe remind them? Optional, but we can keep it simple
-  }
-});
+window.addEventListener('orientationchange', checkPopupVisibility);
 
 // Also check window resize for mobile
-window.addEventListener('resize', () => {
-  if (isMobileDevice()) {
-    // No action needed, but we could adjust if necessary
-  }
-});
+window.addEventListener('resize', checkPopupVisibility);
 </script>
 </body>
 </html>
