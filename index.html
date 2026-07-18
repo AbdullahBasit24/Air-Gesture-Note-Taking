@@ -24,10 +24,10 @@
   *{box-sizing:border-box;}
   body{margin:0;background:var(--ink-black);color:var(--text);font-family:'Inter',sans-serif;}
 
-  .app{display:grid;grid-template-columns:minmax(0,1fr) 300px;grid-template-rows:auto minmax(0,1fr) auto;height:100dvh;min-height:560px;gap:0;}
+  .app{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;height:100dvh;min-height:560px;gap:0;}
 
   /* Top bar */
-  header{grid-column:1/3;display:flex;align-items:center;justify-content:space-between;padding:14px 28px;border-bottom:1px solid var(--hairline);}
+  header{grid-column:1;display:flex;align-items:center;justify-content:space-between;padding:14px 28px;border-bottom:1px solid var(--hairline);}
   .wordmark{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px;letter-spacing:0.2px;display:flex;align-items:center;gap:10px;}
   .wordmark .dot{width:8px;height:8px;border-radius:50%;background:var(--focus-green);box-shadow:0 0 8px var(--focus-green);}
   .status-pill{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.5px;color:var(--text-mute);background:var(--panel);border:1px solid var(--hairline);padding:6px 12px;border-radius:20px;}
@@ -36,11 +36,11 @@
   .status-pill.locked{color:var(--focus-green);border-color:var(--focus-green-dim);}
 
   /* Viewfinder */
-  .stage{position:relative;display:flex;align-items:center;justify-content:center;padding:clamp(14px,2vw,30px);min-height:0;overflow:hidden;}
+  .stage{position:relative;display:flex;align-items:center;justify-content:center;padding:clamp(6px,1vw,14px);min-height:0;overflow:hidden;}
   .viewfinder{position:relative;width:100%;height:100%;max-width:none;aspect-ratio:auto;background:#EEF2F6;border:1px solid var(--hairline);border-radius:10px;overflow:hidden;}
 
   /* corner brackets - the signature element */
-  .bracket{position:absolute;width:34px;height:34px;border:2.5px solid var(--text-faint);transition:all .35s cubic-bezier(.4,0,.2,1);}
+  .bracket{position:absolute;width:34px;height:34px;border:2.5px solid var(--text-faint);transition:all .35s cubic-bezier(.4,0,.2,1);pointer-events:none;z-index:6;}
   .bracket.tl{top:14px;left:14px;border-right:none;border-bottom:none;}
   .bracket.tr{top:14px;right:14px;border-left:none;border-bottom:none;}
   .bracket.bl{bottom:14px;left:14px;border-right:none;border-top:none;}
@@ -51,54 +51,63 @@
   .viewfinder.locked .bracket.bl{bottom:8px;left:8px;}
   .viewfinder.locked .bracket.br{bottom:8px;right:8px;}
 
-  .hud{position:absolute;top:16px;left:56px;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text-faint);letter-spacing:0.4px;line-height:1.6;}
-  .hud b{color:var(--text-mute);font-weight:500;}
-  .viewfinder.locked .hud b.state{color:var(--focus-green);}
-
-  .board-wrap{position:absolute;inset:32px;border-radius:6px;box-shadow:0 14px 32px rgba(30,41,59,.14);background:var(--paper);overflow:hidden;}
+  /* The whiteboard now fills the entire reachable gesture area - full bleed,
+     no wasted margin - and adapts to whatever viewport it is opened in. */
+  .board-wrap{position:relative;width:100%;height:100%;border-radius:10px;box-shadow:0 14px 32px rgba(30,41,59,.14);background:var(--paper);overflow:hidden;}
   #board{position:absolute;inset:0;width:100%;height:100%;display:block;background:var(--paper);}
-  .preview{position:absolute;right:14px;bottom:14px;width:190px;aspect-ratio:4/3;border-radius:7px;overflow:hidden;background:#101419;border:2px solid #FFF;box-shadow:0 8px 20px rgba(30,41,59,.24);z-index:2;}
-  #webcam,#handOverlay{position:absolute;inset:0;width:100%;height:100%;display:block;}
-  #webcam{object-fit:cover;transform:scaleX(-1);opacity:.92;}
-  #handOverlay{pointer-events:none;transform:scaleX(-1);}
-  .camera-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:14px;background:#EEF2F6;color:var(--text-mute);font-size:11px;line-height:1.4;}
-  .camera-empty strong{display:block;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:16px;margin-bottom:5px;}
-  .camera-empty.hidden{display:none;}
-  .tracking-guidance{position:absolute;top:14px;right:14px;z-index:3;max-width:230px;padding:7px 10px;border:1px solid #F1C88E;border-radius:7px;background:#FFF8EB;color:#8A4B08;font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.4;opacity:0;transform:translateY(-4px);transition:opacity .18s,transform .18s;pointer-events:none;}
-  .tracking-guidance.show{opacity:1;transform:translateY(0);}
 
-  .fingertip{position:absolute;width:16px;height:16px;border-radius:50%;border:2px solid var(--focus-green);background:rgba(76,255,158,.15);pointer-events:none;transform:translate(-50%,-50%);transition:opacity .2s;box-shadow:0 0 10px rgba(76,255,158,.5);}
+  /* Floating toolbar - pinned top-left, capped width so it can never reach
+     the camera sidebar on the right. Wraps to extra rows instead of clipping. */
+  .dock{position:absolute;top:14px;left:14px;z-index:4;max-width:min(600px,calc(100% - 200px));max-height:calc(100% - 28px);overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px;background:rgba(255,255,255,.94);backdrop-filter:blur(6px);border:1px solid var(--hairline);border-radius:10px;box-shadow:0 6px 18px rgba(30,41,59,.12);}
+  .dock h4{display:none;}
+  .toolbar-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;}
+  .tool-group{display:flex;align-items:center;gap:7px;padding-left:10px;border-left:1px solid var(--hairline);}
+  .tool-group:first-child{padding-left:0;border-left:none;}
 
-  .hint{position:absolute;bottom:16px;right:20px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);}
-
-  /* Right dock */
-  .dock{border-left:1px solid var(--hairline);padding:22px 20px;display:flex;flex-direction:column;gap:22px;}
-  .dock h4{font-family:'Space Grotesk',sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-faint);margin:0 0 12px;font-weight:600;}
-
-  .swatches{display:flex;gap:8px;}
-  .swatch{width:26px;height:26px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:transform .15s;}
+  .swatches{display:flex;gap:6px;}
+  .swatch{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:transform .15s;flex:0 0 auto;}
   .swatch:hover{transform:scale(1.12);}
   .swatch.active{border-color:var(--text);}
 
-  .btn{width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--hairline);background:var(--panel-2);color:var(--text);font-family:'Inter',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .btn{width:auto;min-height:32px;padding:7px 10px;border-radius:7px;border:1px solid var(--hairline);background:var(--panel-2);color:var(--text);font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;}
   .btn:hover{border-color:var(--text-mute);}
   .btn:active{transform:scale(.98);}
   .btn.primary{background:var(--copper);color:#FFF;border:none;font-weight:600;}
   .btn.primary:hover{filter:brightness(1.08);}
   .btn.ghost{background:transparent;}
+  .gesture-hover{outline:3px solid rgba(20,125,82,.38);outline-offset:2px;transform:translateY(-1px);}
 
-  .stack{display:flex;flex-direction:column;gap:8px;}
-  .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .stack,.row2{display:flex;gap:7px;}
 
-  .divider{height:1px;background:var(--hairline);margin:2px 0;}
-
-  .ai-panel{border:1px solid var(--hairline);border-radius:8px;padding:12px;background:var(--panel-2);font-size:12px;line-height:1.5;color:var(--text-mute);display:none;}
+  .ai-panel{width:100%;border-top:1px solid var(--hairline);margin-top:2px;padding-top:8px;font-size:12px;line-height:1.5;color:var(--text-mute);display:none;}
   .ai-panel.show{display:block;}
   .ai-panel .title{font-family:'Space Grotesk',sans-serif;color:var(--text);font-weight:600;font-size:13px;margin-bottom:4px;}
   .ai-panel .tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--copper);background:rgba(201,138,75,.12);padding:2px 6px;border-radius:4px;margin-bottom:8px;letter-spacing:.4px;}
 
+  /* Camera preview + HUD stats - pinned top-right, stacked so they never
+     collide with the toolbar on the left. */
+  .side-panel{position:absolute;top:14px;right:14px;z-index:5;display:flex;flex-direction:column;align-items:flex-end;gap:8px;width:clamp(120px,15vw,172px);}
+  .preview{position:relative;width:100%;aspect-ratio:4/3;border-radius:7px;overflow:hidden;background:#101419;border:2px solid #FFF;box-shadow:0 5px 14px rgba(30,41,59,.18);flex:0 0 auto;}
+  #webcam,#handOverlay{position:absolute;inset:0;width:100%;height:100%;display:block;}
+  #webcam{object-fit:cover;transform:scaleX(-1);opacity:.92;}
+  #handOverlay{pointer-events:none;transform:scaleX(-1);}
+  .camera-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:10px;background:#EEF2F6;color:var(--text-mute);font-size:10.5px;line-height:1.4;}
+  .camera-empty strong{display:block;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:14px;margin-bottom:4px;}
+  .camera-empty.hidden{display:none;}
+
+  .hud{width:100%;box-sizing:border-box;background:rgba(255,255,255,.9);backdrop-filter:blur(6px);border:1px solid var(--hairline);border-radius:8px;padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);letter-spacing:0.3px;line-height:1.6;text-align:left;}
+  .hud b{color:var(--text-mute);font-weight:500;}
+  .viewfinder.locked .hud b.state{color:var(--focus-green);}
+
+  .tracking-guidance{position:absolute;bottom:16px;left:14px;z-index:3;max-width:260px;padding:7px 10px;border:1px solid #F1C88E;border-radius:7px;background:#FFF8EB;color:#8A4B08;font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.4;opacity:0;transform:translateY(4px);transition:opacity .18s,transform .18s;pointer-events:none;}
+  .tracking-guidance.show{opacity:1;transform:translateY(0);}
+
+  .fingertip{position:fixed;z-index:20;width:16px;height:16px;border-radius:50%;border:2px solid var(--focus-green);background:rgba(76,255,158,.15);pointer-events:none;transform:translate(-50%,-50%);transition:opacity .12s,background .12s;box-shadow:0 0 10px rgba(76,255,158,.5);}
+
+  .hint{position:absolute;bottom:16px;right:14px;z-index:3;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);background:rgba(255,255,255,.85);padding:3px 8px;border-radius:6px;}
+
   /* Filmstrip footer */
-  .filmstrip{grid-column:1/3;border-top:1px solid var(--hairline);padding:10px 28px;display:flex;gap:14px;align-items:center;overflow-x:auto;min-height:72px;}
+  .filmstrip{grid-column:1;border-top:1px solid var(--hairline);padding:10px 28px;display:flex;gap:14px;align-items:center;overflow-x:auto;min-height:72px;}
   .filmstrip h5{font-family:'Space Grotesk',sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-faint);margin:0;white-space:nowrap;font-weight:600;}
   .note-card{flex:0 0 auto;width:110px;height:78px;background:var(--paper);border-radius:4px;position:relative;box-shadow:0 6px 14px rgba(30,41,59,.16);cursor:pointer;overflow:hidden;transition:transform .15s;}
   .note-card:hover{transform:translateY(-3px);}
@@ -106,12 +115,18 @@
   .note-card .label{position:absolute;bottom:0;left:0;right:0;background:rgba(23,32,51,.78);color:var(--paper);font-family:'JetBrains Mono',monospace;font-size:8.5px;padding:3px 5px;letter-spacing:.3px;}
   .note-card.empty{display:flex;align-items:center;justify-content:center;background:var(--panel-2);border:1px dashed var(--hairline);color:var(--text-faint);font-size:20px;font-weight:300;}
   @media (max-width:850px){
-    .app{grid-template-columns:1fr;grid-template-rows:auto minmax(340px,1fr) auto auto;height:auto;min-height:100dvh;}
+    .app{grid-template-columns:1fr;grid-template-rows:auto minmax(340px,1fr) auto;height:auto;min-height:100dvh;}
     header,.filmstrip{grid-column:1;}
-    .dock{grid-row:3;border-left:0;border-top:1px solid var(--hairline);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:14px;gap:14px;}
-    .dock>div:last-child{margin-top:0!important;}
-    .stage{min-height:0;padding:14px;}
-    .board-wrap{inset:28px 20px;}
+    .stage{min-height:0;padding:10px;}
+    .dock{max-width:calc(100% - 28px);}
+    .side-panel{width:96px;}
+    .hud{font-size:9px;padding:6px 8px;}
+    .tracking-guidance{max-width:70%;}
+  }
+  @media (max-width:520px){
+    .side-panel{position:static;width:100%;flex-direction:row;align-items:center;margin-top:8px;}
+    .preview{width:88px;flex:0 0 88px;}
+    .dock{max-width:calc(100% - 28px);}
   }
 </style>
 </head>
@@ -129,67 +144,56 @@
       <div class="bracket tr"></div>
       <div class="bracket bl"></div>
       <div class="bracket br"></div>
-      <div class="hud">
-        TRACK <b class="state" id="hudState">IDLE</b><br>
-        LANDMARKS <b id="hudDist">--</b><br>
-        FPS <b id="hudFps">--</b>
-      </div>
+
+      <!-- The board fills the entire reachable gesture area. Every control
+           floats on top of it as compact, non-overlapping cards. -->
       <div class="board-wrap">
         <canvas id="board"></canvas>
-        <div class="tracking-guidance" id="trackingGuidance"></div>
-        <div class="preview">
-          <video id="webcam" playsinline muted></video>
-          <canvas id="handOverlay"></canvas>
-          <div class="camera-empty" id="cameraEmpty"><div><strong>Camera ready</strong>Start tracking</div></div>
+
+        <div class="dock">
+          <div class="toolbar-row">
+            <div class="tool-group" id="swatches">
+              <div class="swatch active" data-c="#2B2B2B" style="background:#2B2B2B"></div>
+              <div class="swatch" data-c="#1E4FB0" style="background:#1E4FB0"></div>
+              <div class="swatch" data-c="#B0271E" style="background:#B0271E"></div>
+              <div class="swatch" data-c="#1E7A4C" style="background:#1E7A4C"></div>
+            </div>
+            <div class="tool-group">
+              <button class="btn ghost" id="undoBtn">Undo</button>
+              <button class="btn ghost" id="clearBtn">Clear</button>
+            </div>
+            <div class="tool-group">
+              <button class="btn" id="cameraBtn">Start camera</button>
+              <button class="btn ghost" id="cameraOffBtn" disabled>Camera off</button>
+            </div>
+            <div class="tool-group">
+              <button class="btn primary" id="cleanupBtn">✦ Clean up</button>
+              <button class="btn" id="saveBtn">Save to notes</button>
+            </div>
+          </div>
+          <div class="ai-panel" id="aiPanel">
+            <span class="tag">GPT-5.6 · vision</span>
+            <div class="title">"Q3 launch checklist"</div>
+            Transcribed 14 words across 3 lines. Detected a short task list — added as note title and summary below the original ink.
+          </div>
         </div>
+
+        <div class="side-panel">
+          <div class="preview">
+            <video id="webcam" playsinline muted></video>
+            <canvas id="handOverlay"></canvas>
+            <div class="camera-empty" id="cameraEmpty"><div><strong>Camera ready</strong>Start tracking</div></div>
+          </div>
+          <div class="hud">
+            TRACK <b class="state" id="hudState">IDLE</b><br>
+            LANDMARKS <b id="hudDist">--</b><br>
+            FPS <b id="hudFps">--</b>
+          </div>
+        </div>
+
+        <div class="tracking-guidance" id="trackingGuidance"></div>
+        <div class="hint" id="hint">camera is off</div>
       </div>
-      <div class="fingertip" id="fingertip" style="opacity:0;"></div>
-      <div class="hint" id="hint">camera is off</div>
-    </div>
-  </div>
-
-  <div class="dock">
-    <div>
-      <h4>Ink</h4>
-      <div class="swatches" id="swatches">
-        <div class="swatch active" data-c="#2B2B2B" style="background:#2B2B2B"></div>
-        <div class="swatch" data-c="#1E4FB0" style="background:#1E4FB0"></div>
-        <div class="swatch" data-c="#B0271E" style="background:#B0271E"></div>
-        <div class="swatch" data-c="#1E7A4C" style="background:#1E7A4C"></div>
-      </div>
-    </div>
-
-    <div>
-      <h4>Board</h4>
-      <div class="row2">
-        <button class="btn ghost" id="undoBtn">Undo</button>
-        <button class="btn ghost" id="clearBtn">Clear</button>
-      </div>
-    </div>
-
-    <div class="divider"></div>
-
-    <div>
-      <h4>Tracking</h4>
-      <div class="stack">
-        <button class="btn" id="cameraBtn">Start camera</button>
-      </div>
-    </div>
-
-    <div class="divider"></div>
-
-    <div>
-      <h4>GPT-5.6</h4>
-      <button class="btn primary" id="cleanupBtn">✦ Clean up this note</button>
-      <div class="ai-panel" id="aiPanel">
-        <span class="tag">GPT-5.6 · vision</span>
-        <div class="title">"Q3 launch checklist"</div>
-        Transcribed 14 words across 3 lines. Detected a short task list — added as note title and summary below the original ink.
-      </div>
-    </div>
-
-    <div style="margin-top:auto;">
-      <button class="btn" id="saveBtn">Save to notes</button>
     </div>
   </div>
 
@@ -200,11 +204,16 @@
 
 </div>
 
+<div class="fingertip" id="fingertip" style="opacity:0;"></div>
+
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 <script>
 // ---- Gesture whiteboard ----
+// Every actionable control lives inside the same board rectangle that receives
+// gesture coordinates; there is no off-board interaction area.
+const boardWrap = document.querySelector('.board-wrap');
 const canvas = document.getElementById('board');
 const ctx = canvas.getContext('2d');
 let drawing = false, strokes = [], currentStroke = [], lastDrawPoint = null;
@@ -268,15 +277,22 @@ const video = document.getElementById('webcam');
 const overlay = document.getElementById('handOverlay');
 const overlayCtx = overlay.getContext('2d');
 const cameraBtn = document.getElementById('cameraBtn');
+const cameraOffBtn = document.getElementById('cameraOffBtn');
 const cameraEmpty = document.getElementById('cameraEmpty');
 const hint = document.getElementById('hint');
 const tip = document.getElementById('fingertip');
 const trackingGuidance = document.getElementById('trackingGuidance');
-const CLOSE_PINCH_THRESHOLD = 0.22;
-const OPEN_PINCH_THRESHOLD = 0.27;
-const PINCH_CONFIRMATION_FRAMES = 3;
-const SMOOTHING = 0.20;
-let hands, cameraRunning = false, lastFrameTime = 0, smoothedPoint = null, pinchFrames = 0;
+// A forgiving close threshold plus a wider release threshold makes pinch
+// recognition easier without repeatedly toggling at the boundary.
+const CLOSE_PINCH_THRESHOLD = 0.24;
+const OPEN_PINCH_THRESHOLD = 0.30;
+const PINCH_CONFIRMATION_FRAMES = 2;
+const HAND_LOSS_GRACE_MS = 180;
+const MIN_SMOOTHING = 0.16;
+const MAX_SMOOTHING = 0.52;
+let hands, cameraRunning = false, lastFrameTime = 0, smoothedPoint = null;
+let pinchFrames = 0, pinchLatched = false, gestureTarget = null, hoveredControl = null;
+let lastHandSeenAt = 0, cameraSession = 0;
 
 function setTrackingState(locked, message, state){
   vf.classList.toggle('locked', locked);
@@ -335,25 +351,50 @@ function visibleCameraPoint(landmark){
 }
 
 function boardPoint(landmark){
-  const rect = canvas.getBoundingClientRect();
-  const visible = visibleCameraPoint(landmark);
-  // The preview is mirrored, so invert x to keep board movement intuitive.
-  const raw = {x:(1 - visible.x) * rect.width, y:visible.y * rect.height};
+  const rect = boardWrap.getBoundingClientRect();
+  // The full camera range maps to the 16:9 workspace, including its control rail.
+  const raw = {x:(1 - landmark.x) * rect.width, y:landmark.y * rect.height};
+  // Adapt smoothing to movement: steady hands are filtered strongly, deliberate
+  // movement remains responsive instead of lagging behind the finger.
+  const distance = smoothedPoint ? Math.hypot(raw.x - smoothedPoint.x, raw.y - smoothedPoint.y) : 0;
+  const smoothing = Math.min(MAX_SMOOTHING, MIN_SMOOTHING + distance / 95);
   if (!smoothedPoint) smoothedPoint = raw;
   smoothedPoint = {
-    x: smoothedPoint.x + (raw.x - smoothedPoint.x) * SMOOTHING,
-    y: smoothedPoint.y + (raw.y - smoothedPoint.y) * SMOOTHING
+    x: smoothedPoint.x + (raw.x - smoothedPoint.x) * smoothing,
+    y: smoothedPoint.y + (raw.y - smoothedPoint.y) * smoothing
   };
   return smoothedPoint;
 }
 
+function dashboardPoint(boardPoint){
+  const rect = boardWrap.getBoundingClientRect();
+  // Reuse the filtered ink position so dashboard hover/click does not jitter.
+  return {x:rect.left + boardPoint.x, y:rect.top + boardPoint.y};
+}
+
 function showCursor(point, pinching){
-  const boardRect = canvas.getBoundingClientRect();
-  const viewfinderRect = vf.getBoundingClientRect();
-  tip.style.left = `${boardRect.left - viewfinderRect.left + point.x}px`;
-  tip.style.top = `${boardRect.top - viewfinderRect.top + point.y}px`;
+  tip.style.left = `${point.x}px`;
+  tip.style.top = `${point.y}px`;
   tip.style.opacity = '1';
   tip.style.background = pinching ? 'var(--focus-green)' : 'rgba(76,255,158,.15)';
+}
+
+function controlAt(point){
+  const element = document.elementFromPoint(point.x, point.y);
+  const control = element?.closest('.dock button, .swatch');
+  return control && !control.disabled ? control : null;
+}
+
+function setHoveredControl(control){
+  if (hoveredControl === control) return;
+  hoveredControl?.classList.remove('gesture-hover');
+  hoveredControl = control;
+  hoveredControl?.classList.add('gesture-hover');
+}
+
+function isOverBoard(point){
+  const rect = canvas.getBoundingClientRect();
+  return point.x >= rect.left && point.x <= rect.right && point.y >= rect.top && point.y <= rect.bottom;
 }
 
 function finishStroke(){
@@ -365,19 +406,33 @@ function finishStroke(){
   if (hadStroke) redraw();
 }
 
-function updateStroke(point, pinchDistance){
-  pinchFrames = pinchDistance < CLOSE_PINCH_THRESHOLD ? pinchFrames + 1 : 0;
-  const shouldStart = !drawing && pinchFrames >= PINCH_CONFIRMATION_FRAMES;
-  const shouldEnd = drawing && pinchDistance > OPEN_PINCH_THRESHOLD;
-  if (shouldStart) {
-    drawing = true;
-    currentStroke = [{...point}];
-    lastDrawPoint = {...point};
-  }
-  if (shouldEnd) {
+function updateGesture(point, dashboardCursor, pinchDistance){
+  const control = controlAt(dashboardCursor);
+  setHoveredControl(control);
+
+  if (pinchLatched && pinchDistance > OPEN_PINCH_THRESHOLD) {
     finishStroke();
+    pinchLatched = false;
+    pinchFrames = 0;
+    gestureTarget = null;
     return;
   }
+
+  if (!pinchLatched) {
+    pinchFrames = pinchDistance < CLOSE_PINCH_THRESHOLD ? pinchFrames + 1 : 0;
+    if (pinchFrames >= PINCH_CONFIRMATION_FRAMES) {
+      pinchLatched = true;
+      gestureTarget = control;
+      if (gestureTarget) {
+        gestureTarget.click();
+      } else if (isOverBoard(dashboardCursor)) {
+        drawing = true;
+        currentStroke = [{...point}];
+        lastDrawPoint = {...point};
+      }
+    }
+  }
+
   if (drawing) {
     const movement = Math.hypot(point.x - lastDrawPoint.x, point.y - lastDrawPoint.y);
     if (movement > 0.7) {
@@ -402,18 +457,28 @@ function drawResults(results){
     const hand = landmarks[0];
     const pinchDistance = landmarkDistance2D(hand[4], hand[8]) / landmarkDistance2D(hand[0], hand[9]);
     const point = boardPoint(hand[8]);
-    updateStroke(point, pinchDistance);
-    showCursor(point, drawing);
+    const dashboardCursor = dashboardPoint(point);
+    const canvasRect = canvas.getBoundingClientRect();
+    const inkPoint = {x:dashboardCursor.x - canvasRect.left, y:dashboardCursor.y - canvasRect.top};
+    updateGesture(inkPoint, dashboardCursor, pinchDistance);
+    showCursor(dashboardCursor, drawing || pinchLatched);
     hudDist.textContent = pinchDistance.toFixed(3);
+    lastHandSeenAt = performance.now();
     const isDrawing = drawing;
-    setTrackingState(true, isDrawing ? 'DRAWING' : 'HAND DETECTED', isDrawing ? 'PINCHING' : 'READY');
-    hint.textContent = isDrawing ? 'pinch held — drawing' : 'pinch index finger and thumb to write';
+    const isSelecting = pinchLatched && Boolean(gestureTarget);
+    setTrackingState(true, isDrawing ? 'DRAWING' : isSelecting ? 'SELECTING' : 'HAND DETECTED', isDrawing || isSelecting ? 'PINCHING' : 'READY');
+    hint.textContent = isDrawing ? 'pinch held - drawing' : isSelecting ? 'pinch selected dashboard control' : 'pinch index finger and thumb to write or select';
     showGuidance(handGuidance(hand));
   } else {
-    finishStroke();
-    smoothedPoint = null;
-    pinchFrames = 0;
-    tip.style.opacity = '0';
+    if (performance.now() - lastHandSeenAt > HAND_LOSS_GRACE_MS) {
+      finishStroke();
+      smoothedPoint = null;
+      pinchFrames = 0;
+      pinchLatched = false;
+      gestureTarget = null;
+      tip.style.opacity = '0';
+    }
+    setHoveredControl(null);
     showGuidance('Place one hand inside the camera frame.');
     setTrackingState(false, 'SEARCHING FOR HAND', 'SEARCHING');
   }
@@ -426,10 +491,15 @@ async function startCamera(){
     return;
   }
   cameraBtn.disabled = true;
+  const session = ++cameraSession;
   cameraBtn.textContent = 'Starting camera…';
   setTrackingState(false, 'REQUESTING CAMERA', 'WAITING');
   try {
     const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user', width:{ideal:1280}, height:{ideal:720}}, audio:false});
+    if (session !== cameraSession) {
+      stream.getTracks().forEach(track => track.stop());
+      return;
+    }
     video.srcObject = stream;
     await video.play();
     resizeOverlay();
@@ -438,17 +508,19 @@ async function startCamera(){
     hands.onResults(drawResults);
     cameraRunning = true;
     cameraEmpty.classList.add('hidden');
+    cameraOffBtn.disabled = false;
     cameraBtn.textContent = 'Camera active';
     hint.textContent = 'show one hand to the camera';
     async function detectFrame(now){
-      if (!cameraRunning) return;
+      if (!cameraRunning || session !== cameraSession) return;
       if (lastFrameTime) hudFps.textContent = Math.round(1000 / (now - lastFrameTime));
       lastFrameTime = now;
       await hands.send({image:video});
-      requestAnimationFrame(detectFrame);
+      if (cameraRunning && session === cameraSession) requestAnimationFrame(detectFrame);
     }
     requestAnimationFrame(detectFrame);
   } catch (error) {
+    if (session !== cameraSession) return;
     console.error('Unable to start the webcam:', error);
     cameraBtn.disabled = false;
     cameraBtn.textContent = 'Try camera again';
@@ -458,6 +530,33 @@ async function startCamera(){
 }
 
 cameraBtn.addEventListener('click', startCamera);
+function stopCamera(){
+  cameraSession++;
+  cameraRunning = false;
+  finishStroke();
+  pinchFrames = 0;
+  pinchLatched = false;
+  gestureTarget = null;
+  smoothedPoint = null;
+  setHoveredControl(null);
+  tip.style.opacity = '0';
+  const stream = video.srcObject;
+  if (stream) stream.getTracks().forEach(track => track.stop());
+  video.pause();
+  video.srcObject = null;
+  const rect = overlay.getBoundingClientRect();
+  overlayCtx.clearRect(0, 0, rect.width, rect.height);
+  cameraEmpty.classList.remove('hidden');
+  cameraBtn.disabled = false;
+  cameraBtn.textContent = 'Start camera';
+  cameraOffBtn.disabled = true;
+  hudFps.textContent = '--';
+  hudDist.textContent = '--';
+  hint.textContent = 'camera is off';
+  showGuidance('');
+  setTrackingState(false, 'CAMERA OFF', 'IDLE');
+}
+cameraOffBtn.addEventListener('click', stopCamera);
 window.addEventListener('resize', resizeOverlay);
 
 document.getElementById('cleanupBtn').addEventListener('click', ()=>{
