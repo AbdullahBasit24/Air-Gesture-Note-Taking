@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Air drawing whiteboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root{
+    --ink-black:#F5F7FA;
+    --panel:#FFFFFF;
+    --panel-2:#F8FAFC;
+    --hairline:#DCE3EC;
+    --paper:#FFFFFF;
+    --paper-shadow:#E8EDF3;
+    --pen:#2B2B2B;
+    --focus-green:#147D52;
+    --focus-green-dim:#CDEDDD;
+    --copper:#B86B2E;
+    --text:#172033;
+    --text-mute:#667085;
+    --text-faint:#98A2B3;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--ink-black);color:var(--text);font-family:'Inter',sans-serif;}
+
+  .app{display:grid;grid-template-columns:minmax(0,1fr) 300px;grid-template-rows:auto minmax(0,1fr) auto;height:100dvh;min-height:560px;gap:0;}
+
+  /* Top bar */
+  header{grid-column:1/3;display:flex;align-items:center;justify-content:space-between;padding:14px 28px;border-bottom:1px solid var(--hairline);}
+  .wordmark{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px;letter-spacing:0.2px;display:flex;align-items:center;gap:10px;}
+  .wordmark .dot{width:8px;height:8px;border-radius:50%;background:var(--focus-green);box-shadow:0 0 8px var(--focus-green);}
+  .status-pill{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.5px;color:var(--text-mute);background:var(--panel);border:1px solid var(--hairline);padding:6px 12px;border-radius:20px;}
+  .status-pill .led{width:6px;height:6px;border-radius:50%;background:var(--text-faint);transition:all .25s;}
+  .status-pill.locked .led{background:var(--focus-green);box-shadow:0 0 6px var(--focus-green);}
+  .status-pill.locked{color:var(--focus-green);border-color:var(--focus-green-dim);}
+
+  /* Viewfinder */
+  .stage{position:relative;display:flex;align-items:center;justify-content:center;padding:clamp(14px,2vw,30px);min-height:0;overflow:hidden;}
+  .viewfinder{position:relative;width:100%;height:100%;max-width:none;aspect-ratio:auto;background:#EEF2F6;border:1px solid var(--hairline);border-radius:10px;overflow:hidden;}
+
+  /* corner brackets - the signature element */
+  .bracket{position:absolute;width:34px;height:34px;border:2.5px solid var(--text-faint);transition:all .35s cubic-bezier(.4,0,.2,1);}
+  .bracket.tl{top:14px;left:14px;border-right:none;border-bottom:none;}
+  .bracket.tr{top:14px;right:14px;border-left:none;border-bottom:none;}
+  .bracket.bl{bottom:14px;left:14px;border-right:none;border-top:none;}
+  .bracket.br{bottom:14px;right:14px;border-left:none;border-top:none;}
+  .viewfinder.locked .bracket{border-color:var(--focus-green);filter:drop-shadow(0 0 6px rgba(76,255,158,.6));}
+  .viewfinder.locked .bracket.tl{top:8px;left:8px;}
+  .viewfinder.locked .bracket.tr{top:8px;right:8px;}
+  .viewfinder.locked .bracket.bl{bottom:8px;left:8px;}
+  .viewfinder.locked .bracket.br{bottom:8px;right:8px;}
+
+  .hud{position:absolute;top:16px;left:56px;font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--text-faint);letter-spacing:0.4px;line-height:1.6;}
+  .hud b{color:var(--text-mute);font-weight:500;}
+  .viewfinder.locked .hud b.state{color:var(--focus-green);}
+
+  .board-wrap{position:absolute;inset:32px;border-radius:6px;box-shadow:0 14px 32px rgba(30,41,59,.14);background:var(--paper);overflow:hidden;}
+  #board{position:absolute;inset:0;width:100%;height:100%;display:block;background:var(--paper);}
+  .preview{position:absolute;right:14px;bottom:14px;width:190px;aspect-ratio:4/3;border-radius:7px;overflow:hidden;background:#101419;border:2px solid #FFF;box-shadow:0 8px 20px rgba(30,41,59,.24);z-index:2;}
+  #webcam,#handOverlay{position:absolute;inset:0;width:100%;height:100%;display:block;}
+  #webcam{object-fit:cover;transform:scaleX(-1);opacity:.92;}
+  #handOverlay{pointer-events:none;transform:scaleX(-1);}
+  .camera-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:14px;background:#EEF2F6;color:var(--text-mute);font-size:11px;line-height:1.4;}
+  .camera-empty strong{display:block;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:16px;margin-bottom:5px;}
+  .camera-empty.hidden{display:none;}
+  .tracking-guidance{position:absolute;top:14px;right:14px;z-index:3;max-width:230px;padding:7px 10px;border:1px solid #F1C88E;border-radius:7px;background:#FFF8EB;color:#8A4B08;font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.4;opacity:0;transform:translateY(-4px);transition:opacity .18s,transform .18s;pointer-events:none;}
+  .tracking-guidance.show{opacity:1;transform:translateY(0);}
+
+  .fingertip{position:absolute;width:16px;height:16px;border-radius:50%;border:2px solid var(--focus-green);background:rgba(76,255,158,.15);pointer-events:none;transform:translate(-50%,-50%);transition:opacity .2s;box-shadow:0 0 10px rgba(76,255,158,.5);}
+
+  .hint{position:absolute;bottom:16px;right:20px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);}
+
+  /* Right dock */
+  .dock{border-left:1px solid var(--hairline);padding:22px 20px;display:flex;flex-direction:column;gap:22px;}
+  .dock h4{font-family:'Space Grotesk',sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-faint);margin:0 0 12px;font-weight:600;}
+
+  .swatches{display:flex;gap:8px;}
+  .swatch{width:26px;height:26px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:transform .15s;}
+  .swatch:hover{transform:scale(1.12);}
+  .swatch.active{border-color:var(--text);}
+
+  .btn{width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--hairline);background:var(--panel-2);color:var(--text);font-family:'Inter',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px;}
+  .btn:hover{border-color:var(--text-mute);}
+  .btn:active{transform:scale(.98);}
+  .btn.primary{background:var(--copper);color:#FFF;border:none;font-weight:600;}
+  .btn.primary:hover{filter:brightness(1.08);}
+  .btn.ghost{background:transparent;}
+
+  .stack{display:flex;flex-direction:column;gap:8px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+
+  .divider{height:1px;background:var(--hairline);margin:2px 0;}
+
+  .ai-panel{border:1px solid var(--hairline);border-radius:8px;padding:12px;background:var(--panel-2);font-size:12px;line-height:1.5;color:var(--text-mute);display:none;}
+  .ai-panel.show{display:block;}
+  .ai-panel .title{font-family:'Space Grotesk',sans-serif;color:var(--text);font-weight:600;font-size:13px;margin-bottom:4px;}
+  .ai-panel .tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--copper);background:rgba(201,138,75,.12);padding:2px 6px;border-radius:4px;margin-bottom:8px;letter-spacing:.4px;}
+
+  /* Filmstrip footer */
+  .filmstrip{grid-column:1/3;border-top:1px solid var(--hairline);padding:10px 28px;display:flex;gap:14px;align-items:center;overflow-x:auto;min-height:72px;}
+  .filmstrip h5{font-family:'Space Grotesk',sans-serif;font-size:11px;text-transform:uppercase;letter-spacing:1.2px;color:var(--text-faint);margin:0;white-space:nowrap;font-weight:600;}
+  .note-card{flex:0 0 auto;width:110px;height:78px;background:var(--paper);border-radius:4px;position:relative;box-shadow:0 6px 14px rgba(30,41,59,.16);cursor:pointer;overflow:hidden;transition:transform .15s;}
+  .note-card:hover{transform:translateY(-3px);}
+  .note-card svg{position:absolute;inset:0;width:100%;height:100%;}
+  .note-card .label{position:absolute;bottom:0;left:0;right:0;background:rgba(23,32,51,.78);color:var(--paper);font-family:'JetBrains Mono',monospace;font-size:8.5px;padding:3px 5px;letter-spacing:.3px;}
+  .note-card.empty{display:flex;align-items:center;justify-content:center;background:var(--panel-2);border:1px dashed var(--hairline);color:var(--text-faint);font-size:20px;font-weight:300;}
+  @media (max-width:850px){
+    .app{grid-template-columns:1fr;grid-template-rows:auto minmax(340px,1fr) auto auto;height:auto;min-height:100dvh;}
+    header,.filmstrip{grid-column:1;}
+    .dock{grid-row:3;border-left:0;border-top:1px solid var(--hairline);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:14px;gap:14px;}
+    .dock>div:last-child{margin-top:0!important;}
+    .stage{min-height:0;padding:14px;}
+    .board-wrap{inset:28px 20px;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="wordmark"><span class="dot"></span>Air canvas</div>
+    <div class="status-pill" id="statusPill"><span class="led"></span><span id="statusText">SEARCHING FOR HAND</span></div>
+  </header>
+
+  <div class="stage">
+    <div class="viewfinder" id="viewfinder">
+      <div class="bracket tl"></div>
+      <div class="bracket tr"></div>
+      <div class="bracket bl"></div>
+      <div class="bracket br"></div>
+      <div class="hud">
+        TRACK <b class="state" id="hudState">IDLE</b><br>
+        LANDMARKS <b id="hudDist">--</b><br>
+        FPS <b id="hudFps">--</b>
+      </div>
+      <div class="board-wrap">
+        <canvas id="board"></canvas>
+        <div class="tracking-guidance" id="trackingGuidance"></div>
+        <div class="preview">
+          <video id="webcam" playsinline muted></video>
+          <canvas id="handOverlay"></canvas>
+          <div class="camera-empty" id="cameraEmpty"><div><strong>Camera ready</strong>Start tracking</div></div>
+        </div>
+      </div>
+      <div class="fingertip" id="fingertip" style="opacity:0;"></div>
+      <div class="hint" id="hint">camera is off</div>
+    </div>
+  </div>
+
+  <div class="dock">
+    <div>
+      <h4>Ink</h4>
+      <div class="swatches" id="swatches">
+        <div class="swatch active" data-c="#2B2B2B" style="background:#2B2B2B"></div>
+        <div class="swatch" data-c="#1E4FB0" style="background:#1E4FB0"></div>
+        <div class="swatch" data-c="#B0271E" style="background:#B0271E"></div>
+        <div class="swatch" data-c="#1E7A4C" style="background:#1E7A4C"></div>
+      </div>
+    </div>
+
+    <div>
+      <h4>Board</h4>
+      <div class="row2">
+        <button class="btn ghost" id="undoBtn">Undo</button>
+        <button class="btn ghost" id="clearBtn">Clear</button>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div>
+      <h4>Tracking</h4>
+      <div class="stack">
+        <button class="btn" id="cameraBtn">Start camera</button>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div>
+      <h4>GPT-5.6</h4>
+      <button class="btn primary" id="cleanupBtn">✦ Clean up this note</button>
+      <div class="ai-panel" id="aiPanel">
+        <span class="tag">GPT-5.6 · vision</span>
+        <div class="title">"Q3 launch checklist"</div>
+        Transcribed 14 words across 3 lines. Detected a short task list — added as note title and summary below the original ink.
+      </div>
+    </div>
+
+    <div style="margin-top:auto;">
+      <button class="btn" id="saveBtn">Save to notes</button>
+    </div>
+  </div>
+
+  <div class="filmstrip">
+    <h5>Notes</h5>
+    <div class="note-card empty" id="addCard">+</div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+<script>
+// ---- Gesture whiteboard ----
+const canvas = document.getElementById('board');
+const ctx = canvas.getContext('2d');
+let drawing = false, strokes = [], currentStroke = [], lastDrawPoint = null;
+let inkColor = '#2B2B2B';
+
+function resize(){
+  const r = canvas.getBoundingClientRect();
+  canvas.width = Math.round(r.width * devicePixelRatio);
+  canvas.height = Math.round(r.height * devicePixelRatio);
+  ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+  redraw();
+}
+window.addEventListener('resize', resize);
+
+function redraw(){
+  const width = canvas.width / devicePixelRatio;
+  const height = canvas.height / devicePixelRatio;
+  ctx.clearRect(0,0,width,height);
+  function renderStroke(s){
+    ctx.strokeStyle = s.color;
+    ctx.lineWidth = 2.4;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    if (s.pts.length === 1) {
+      ctx.beginPath(); ctx.arc(s.pts[0].x, s.pts[0].y, 1.2, 0, Math.PI * 2); ctx.fillStyle = s.color; ctx.fill();
+    } else {
+      ctx.beginPath();
+      ctx.moveTo(s.pts[0].x, s.pts[0].y);
+      for (let i = 1; i < s.pts.length - 1; i++) {
+        const mid = {x:(s.pts[i].x + s.pts[i + 1].x) / 2, y:(s.pts[i].y + s.pts[i + 1].y) / 2};
+        ctx.quadraticCurveTo(s.pts[i].x, s.pts[i].y, mid.x, mid.y);
+      }
+      const lastPoint = s.pts[s.pts.length - 1];
+      ctx.lineTo(lastPoint.x, lastPoint.y);
+      ctx.stroke();
+    }
+  }
+  strokes.forEach(renderStroke);
+  if (drawing && currentStroke.length) renderStroke({pts:currentStroke, color:inkColor});
+}
+
+document.querySelectorAll('.swatch').forEach(sw=>{
+  sw.addEventListener('click', ()=>{
+    document.querySelectorAll('.swatch').forEach(s=>s.classList.remove('active'));
+    sw.classList.add('active');
+    inkColor = sw.dataset.c;
+  });
+});
+
+document.getElementById('undoBtn').addEventListener('click', ()=>{ strokes.pop(); redraw(); });
+document.getElementById('clearBtn').addEventListener('click', ()=>{ strokes = []; redraw(); document.getElementById('aiPanel').classList.remove('show'); });
+
+// ---- Webcam + MediaPipe Hands (milestone 1) ----
+const vf = document.getElementById('viewfinder');
+const pill = document.getElementById('statusPill');
+const statusText = document.getElementById('statusText');
+const hudState = document.getElementById('hudState');
+const hudDist = document.getElementById('hudDist');
+const hudFps = document.getElementById('hudFps');
+const video = document.getElementById('webcam');
+const overlay = document.getElementById('handOverlay');
+const overlayCtx = overlay.getContext('2d');
+const cameraBtn = document.getElementById('cameraBtn');
+const cameraEmpty = document.getElementById('cameraEmpty');
+const hint = document.getElementById('hint');
+const tip = document.getElementById('fingertip');
+const trackingGuidance = document.getElementById('trackingGuidance');
+const CLOSE_PINCH_THRESHOLD = 0.22;
+const OPEN_PINCH_THRESHOLD = 0.27;
+const PINCH_CONFIRMATION_FRAMES = 3;
+const SMOOTHING = 0.20;
+let hands, cameraRunning = false, lastFrameTime = 0, smoothedPoint = null, pinchFrames = 0;
+
+function setTrackingState(locked, message, state){
+  vf.classList.toggle('locked', locked);
+  pill.classList.toggle('locked', locked);
+  statusText.textContent = message;
+  hudState.textContent = state;
+}
+
+function resizeOverlay(){
+  const rect = overlay.getBoundingClientRect();
+  overlay.width = Math.round(rect.width * devicePixelRatio);
+  overlay.height = Math.round(rect.height * devicePixelRatio);
+  overlayCtx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+}
+
+function landmarkDistance(a, b){
+  return Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
+}
+
+function landmarkDistance2D(a, b){
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+function showGuidance(message){
+  trackingGuidance.textContent = message || '';
+  trackingGuidance.classList.toggle('show', Boolean(message));
+}
+
+function handGuidance(hand){
+  const fingertips = [hand[4], hand[8]];
+  if (fingertips.some(point => point.x < .07 || point.x > .93 || point.y < .07 || point.y > .93)) {
+    return 'Keep thumb and index finger inside the camera frame.';
+  }
+  const handSize = landmarkDistance2D(hand[0], hand[9]);
+  if (handSize < .12) return 'Move your hand a little closer to the camera.';
+  if (handSize > .42) return 'Move your hand slightly farther from the camera.';
+  return '';
+}
+
+function visibleCameraPoint(landmark){
+  const previewRect = overlay.getBoundingClientRect();
+  const sourceAspect = video.videoWidth / video.videoHeight;
+  const targetAspect = previewRect.width / previewRect.height;
+  let x = landmark.x, y = landmark.y;
+
+  // object-fit: cover crops the source before displaying it. Apply the same
+  // crop here so the visible camera edges map to the whiteboard edges.
+  if (sourceAspect > targetAspect) {
+    const visibleWidth = targetAspect / sourceAspect;
+    x = (x - (1 - visibleWidth) / 2) / visibleWidth;
+  } else if (sourceAspect < targetAspect) {
+    const visibleHeight = sourceAspect / targetAspect;
+    y = (y - (1 - visibleHeight) / 2) / visibleHeight;
+  }
+  return {x:Math.max(0, Math.min(1, x)), y:Math.max(0, Math.min(1, y))};
+}
+
+function boardPoint(landmark){
+  const rect = canvas.getBoundingClientRect();
+  const visible = visibleCameraPoint(landmark);
+  // The preview is mirrored, so invert x to keep board movement intuitive.
+  const raw = {x:(1 - visible.x) * rect.width, y:visible.y * rect.height};
+  if (!smoothedPoint) smoothedPoint = raw;
+  smoothedPoint = {
+    x: smoothedPoint.x + (raw.x - smoothedPoint.x) * SMOOTHING,
+    y: smoothedPoint.y + (raw.y - smoothedPoint.y) * SMOOTHING
+  };
+  return smoothedPoint;
+}
+
+function showCursor(point, pinching){
+  const boardRect = canvas.getBoundingClientRect();
+  const viewfinderRect = vf.getBoundingClientRect();
+  tip.style.left = `${boardRect.left - viewfinderRect.left + point.x}px`;
+  tip.style.top = `${boardRect.top - viewfinderRect.top + point.y}px`;
+  tip.style.opacity = '1';
+  tip.style.background = pinching ? 'var(--focus-green)' : 'rgba(76,255,158,.15)';
+}
+
+function finishStroke(){
+  const hadStroke = drawing && currentStroke.length;
+  if (hadStroke) strokes.push({pts:currentStroke, color:inkColor});
+  drawing = false;
+  currentStroke = [];
+  lastDrawPoint = null;
+  if (hadStroke) redraw();
+}
+
+function updateStroke(point, pinchDistance){
+  pinchFrames = pinchDistance < CLOSE_PINCH_THRESHOLD ? pinchFrames + 1 : 0;
+  const shouldStart = !drawing && pinchFrames >= PINCH_CONFIRMATION_FRAMES;
+  const shouldEnd = drawing && pinchDistance > OPEN_PINCH_THRESHOLD;
+  if (shouldStart) {
+    drawing = true;
+    currentStroke = [{...point}];
+    lastDrawPoint = {...point};
+  }
+  if (shouldEnd) {
+    finishStroke();
+    return;
+  }
+  if (drawing) {
+    const movement = Math.hypot(point.x - lastDrawPoint.x, point.y - lastDrawPoint.y);
+    if (movement > 0.7) {
+      const next = {...point};
+      currentStroke.push(next);
+      lastDrawPoint = next;
+      redraw();
+    }
+  }
+}
+
+function drawResults(results){
+  const rect = overlay.getBoundingClientRect();
+  overlayCtx.clearRect(0, 0, rect.width, rect.height);
+  const landmarks = results.multiHandLandmarks || [];
+  hudDist.textContent = '--';
+  if (landmarks.length) {
+    landmarks.forEach(hand => {
+      drawConnectors(overlayCtx, hand, HAND_CONNECTIONS, {color:'#4CFF9E', lineWidth:2});
+      drawLandmarks(overlayCtx, hand, {color:'#EDE6D6', fillColor:'#4CFF9E', lineWidth:1.4, radius:3});
+    });
+    const hand = landmarks[0];
+    const pinchDistance = landmarkDistance2D(hand[4], hand[8]) / landmarkDistance2D(hand[0], hand[9]);
+    const point = boardPoint(hand[8]);
+    updateStroke(point, pinchDistance);
+    showCursor(point, drawing);
+    hudDist.textContent = pinchDistance.toFixed(3);
+    const isDrawing = drawing;
+    setTrackingState(true, isDrawing ? 'DRAWING' : 'HAND DETECTED', isDrawing ? 'PINCHING' : 'READY');
+    hint.textContent = isDrawing ? 'pinch held — drawing' : 'pinch index finger and thumb to write';
+    showGuidance(handGuidance(hand));
+  } else {
+    finishStroke();
+    smoothedPoint = null;
+    pinchFrames = 0;
+    tip.style.opacity = '0';
+    showGuidance('Place one hand inside the camera frame.');
+    setTrackingState(false, 'SEARCHING FOR HAND', 'SEARCHING');
+  }
+}
+
+async function startCamera(){
+  if (cameraRunning) return;
+  if (!navigator.mediaDevices?.getUserMedia) {
+    setTrackingState(false, 'CAMERA NOT SUPPORTED', 'ERROR');
+    return;
+  }
+  cameraBtn.disabled = true;
+  cameraBtn.textContent = 'Starting camera…';
+  setTrackingState(false, 'REQUESTING CAMERA', 'WAITING');
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user', width:{ideal:1280}, height:{ideal:720}}, audio:false});
+    video.srcObject = stream;
+    await video.play();
+    resizeOverlay();
+    hands = new Hands({locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
+    hands.setOptions({maxNumHands:1, modelComplexity:1, minDetectionConfidence:0.65, minTrackingConfidence:0.65});
+    hands.onResults(drawResults);
+    cameraRunning = true;
+    cameraEmpty.classList.add('hidden');
+    cameraBtn.textContent = 'Camera active';
+    hint.textContent = 'show one hand to the camera';
+    async function detectFrame(now){
+      if (!cameraRunning) return;
+      if (lastFrameTime) hudFps.textContent = Math.round(1000 / (now - lastFrameTime));
+      lastFrameTime = now;
+      await hands.send({image:video});
+      requestAnimationFrame(detectFrame);
+    }
+    requestAnimationFrame(detectFrame);
+  } catch (error) {
+    console.error('Unable to start the webcam:', error);
+    cameraBtn.disabled = false;
+    cameraBtn.textContent = 'Try camera again';
+    setTrackingState(false, 'CAMERA ACCESS NEEDED', 'ERROR');
+    hint.textContent = 'allow webcam access, then try again';
+  }
+}
+
+cameraBtn.addEventListener('click', startCamera);
+window.addEventListener('resize', resizeOverlay);
+
+document.getElementById('cleanupBtn').addEventListener('click', ()=>{
+  document.getElementById('aiPanel').classList.add('show');
+});
+
+document.getElementById('saveBtn').addEventListener('click', ()=>{
+  const filmstrip = document.querySelector('.filmstrip');
+  const card = document.createElement('div');
+  card.className = 'note-card';
+  const svgStrokes = strokes.map(s=>{
+    const d = s.pts.map((p,i)=> (i===0?'M':'L')+(p.x*0.3).toFixed(1)+','+(p.y*0.3).toFixed(1)).join(' ');
+    return `<path d="${d}" stroke="${s.color}" stroke-width="1.4" fill="none" stroke-linecap="round"/>`;
+  }).join('');
+  card.innerHTML = `<svg viewBox="0 0 110 78">${svgStrokes}</svg><div class="label">note ${filmstrip.children.length}</div>`;
+  filmstrip.insertBefore(card, document.getElementById('addCard'));
+});
+
+resize();
+</script>
+</body>
+</html>
