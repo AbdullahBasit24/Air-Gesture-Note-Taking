@@ -134,6 +134,78 @@
     .hud{font-size:9px;padding:6px 8px;}
     .tracking-guidance{max-width:70%;}
   }
+  /* Mobile Pop-up Styles */
+  .mobile-popup{
+    position:fixed;
+    top:0;left:0;right:0;bottom:0;
+    background:rgba(0,0,0,0.75);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:10000;
+  }
+  .mobile-popup-content{
+    background:white;
+    padding:28px;
+    border-radius:12px;
+    max-width:90%;
+    width:420px;
+    text-align:center;
+  }
+  .mobile-popup-content h2{
+    margin:0 0 16px 0;
+    color:var(--text);
+  }
+  .mobile-popup-content p{
+    margin:8px 0;
+    color:var(--text-mute);
+    font-size:15px;
+  }
+
+  /* Mobile Responsive Styles */
+  @media (max-width:850px){
+    .app{grid-template-columns:1fr;grid-template-rows:auto minmax(340px,1fr) auto;height:auto;min-height:100dvh;}
+    header,.filmstrip{grid-column:1;}
+    .stage{min-height:0;padding:10px;}
+    .dock{max-width:calc(100% - 28px);}
+    .side-panel{width:96px;}
+    .hud{font-size:9px;padding:6px 8px;}
+    .tracking-guidance{max-width:70%;}
+    header{padding:8px 12px;}
+    .wordmark{font-size:14px;}
+    .header-controls{gap:8px;}
+    .btn{min-height:26px;padding:4px 8px;font-size:11px;}
+    .swatch{width:18px;height:18px;}
+    .thickness-group label, .thickness-value{font-size:8px;}
+    #thicknessSlider{width:60px;}
+    .filmstrip{padding:8px 12px;}
+    .filmstrip-right .guideline-item{font-size:8px;}
+  }
+
+  /* Mobile Landscape Specific (16:9, 18:9, 20:9, 21:9) */
+  @media (max-width:1024px) and (orientation:landscape){
+    /* Make header even more compact in landscape */
+    header{padding:6px 12px;}
+    .wordmark{font-size:13px;}
+    .header-controls{gap:6px;}
+    .btn{min-height:24px;padding:3px 6px;font-size:10px;}
+    .swatch{width:16px;height:16px;}
+    .thickness-group label, .thickness-value{font-size:7px;}
+    #thicknessSlider{width:50px;}
+    .status-pill{font-size:9px;padding:3px 6px;}
+    /* Reduce padding around viewfinder for more space */
+    .stage{padding:4px;}
+    /* Make side panel even smaller */
+    .side-panel{width:80px;gap:4px;}
+    .preview{aspect-ratio:4/3;}
+    .hud{padding:4px 6px;font-size:8px;}
+    /* Smaller filmstrip */
+    .filmstrip{padding:6px 12px;min-height:60px;}
+    .filmstrip h5{font-size:10px;}
+    .note-card{width:90px;height:64px;}
+    .filmstrip-right .guideline-item{font-size:7px;}
+  }
+
   @media (max-width:520px){
     .side-panel{position:static;width:100%;flex-direction:row;align-items:center;margin-top:8px;}
     .preview{width:88px;flex:0 0 88px;}
@@ -225,6 +297,16 @@
 
 </div>
 
+<!-- Mobile Pop-up -->
+<div id="mobilePopup" class="mobile-popup">
+  <div class="mobile-popup-content">
+    <h2>Better on Desktop/Laptop!</h2>
+    <p>For the best air-drawing experience, use this website on a laptop or desktop computer with a webcam.</p>
+    <p>On your phone, rotate to landscape mode to try it out.</p>
+    <button id="closeMobilePopup" class="btn btn-primary">Got it</button>
+  </div>
+</div>
+
 <div class="fingertip" id="fingertip" style="opacity:0;"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
@@ -243,8 +325,8 @@ let inkColor = '#2B2B2B';
 let eraserActive = false;
 let textElements = [];
 let actions = []; // ordered log of {type:'stroke'|'text', item} so Undo removes the right thing
-const MIN_STROKE_SPACING_PX = 2.2;
-const STROKE_SIMPLIFY_TOLERANCE_PX = 2.0;
+const MIN_STROKE_SPACING_PX = 1.5; // Touchscreen-like, more frequent points
+const STROKE_SIMPLIFY_TOLERANCE_PX = 1.2; // Keep the line true to movement
 const INK_WIDTH = 2.4; // default/fallback thickness
 let inkThickness = INK_WIDTH; // live value, controlled by the thickness slider
 const ERASER_WIDTH = 24;
@@ -409,19 +491,23 @@ document.getElementById('modeSwitchBtn').addEventListener('click', ()=>{
 });
 
 document.addEventListener('keydown', (e)=>{
-  if (e.code === 'Space' && !spacebarHeld) {
-    spacebarHeld = true;
-    e.preventDefault(); // Prevent page scroll
+  if (e.code === 'Space') {
+    e.preventDefault(); // Always prevent page scroll, even on autorepeat
+    if (!spacebarHeld) {
+      spacebarHeld = true;
+    }
   }
 });
 
 document.addEventListener('keyup', (e)=>{
-  if (e.code === 'Space' && spacebarHeld) {
-    spacebarHeld = false;
+  if (e.code === 'Space') {
     e.preventDefault();
-    // If we were drawing, finish the stroke
-    if (drawing) {
-      finishStroke();
+    if (spacebarHeld) {
+      spacebarHeld = false;
+      // If we were drawing, finish the stroke
+      if (drawing) {
+        finishStroke();
+      }
     }
   }
 });
@@ -583,7 +669,7 @@ const HAND_LOSS_GRACE_MS = 180;
 // the inner range to the full board means corners remain reachable without
 // pushing a hand out of the webcam view.
 const CAMERA_SAFE_MARGIN = 0.13;
-const CURSOR_DEADBAND_PX = 1.5;
+const CURSOR_DEADBAND_PX = 0.8; // Super responsive, tiny deadband
 let hands, cameraRunning = false, lastFrameTime = 0;
 let pinchFrames = 0, releaseFrames = 0, pinchLatched = false, gestureTarget = null, hoveredControl = null;
 let strokeFrozen = false; // true once soft-release has trimmed the tail of the current stroke
@@ -624,9 +710,9 @@ class OneEuroFilter{
   }
   reset(){ this.xPrev = null; this.dxPrev = 0; this.tPrev = null; }
 }
-// Balanced for accuracy and responsiveness
-const filterX = new OneEuroFilter({minCutoff:0.5, beta:0.04});
-const filterY = new OneEuroFilter({minCutoff:0.5, beta:0.04});
+// Touchscreen-like responsiveness: more responsive at all speeds
+const filterX = new OneEuroFilter({minCutoff:0.7, beta:0.06});
+const filterY = new OneEuroFilter({minCutoff:0.7, beta:0.06});
 
 function setTrackingState(locked, message, state){
   vf.classList.toggle('locked', locked);
@@ -716,11 +802,11 @@ function boardPoint(landmark){
   const dy = filtered.y - cursorPoint.y;
   const distance = Math.hypot(dx, dy);
   if (distance <= CURSOR_DEADBAND_PX) return cursorPoint;
-  // Tuned for accuracy
+  // Touchscreen-like gain: very responsive, minimal damping
   const gain =
-    distance < 5 ? .6 :
-    distance < 15 ? .85 :
-    distance < 30 ? .95 :
+    distance < 3 ? .8 :
+    distance < 10 ? .9 :
+    distance < 20 ? .98 :
     1;
   cursorPoint = {
     x:Math.max(0, Math.min(rect.width, cursorPoint.x + dx * gain)),
@@ -892,7 +978,12 @@ function updateGesture(point, dashboardCursor, pinchDistance, rawPinchDistance){
       }
     }
   } else {
-    // Keyboard + index finger mode
+    // Keyboard + index finger mode - NO PINCH/STROKE FROZEN interference!
+    // Reset pinch-related vars when in this mode
+    pinchLatched = false;
+    pinchFrames = 0;
+    releaseFrames = 0;
+    strokeFrozen = false;
     if (spacebarHeld) {
       if (!drawing && isOverBoard(dashboardCursor)) {
         // Start drawing
@@ -1077,6 +1168,41 @@ document.getElementById('saveBtn').addEventListener('click', ()=>{
 });
 
 resize();
+
+// ---- Mobile Detection & Pop-up ----
+function isMobileDevice() {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+         (window.innerWidth <= 1024 && window.innerHeight <= 1024 && (navigator.userAgent.includes('Mobile') || navigator.userAgent.includes('Tablet')));
+}
+
+const mobilePopup = document.getElementById('mobilePopup');
+const closeMobilePopupBtn = document.getElementById('closeMobilePopup');
+
+// Show pop-up on load if mobile
+if (isMobileDevice()) {
+  mobilePopup.style.display = 'flex';
+} else {
+  mobilePopup.style.display = 'none';
+}
+
+// Close pop-up button
+closeMobilePopupBtn.addEventListener('click', () => {
+  mobilePopup.style.display = 'none';
+});
+
+// Handle orientation changes on mobile
+window.addEventListener('orientationchange', () => {
+  if (isMobileDevice()) {
+    // If user rotates back to portrait, maybe remind them? Optional, but we can keep it simple
+  }
+});
+
+// Also check window resize for mobile
+window.addEventListener('resize', () => {
+  if (isMobileDevice()) {
+    // No action needed, but we could adjust if necessary
+  }
+});
 </script>
 </body>
 </html>
