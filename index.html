@@ -165,6 +165,7 @@
             <div class="tool-group">
               <button class="btn ghost" id="undoBtn">Undo</button>
               <button class="btn ghost" id="clearBtn">Clear</button>
+              <button class="btn toggle" id="eraserBtn" title="Use a pinch to erase ink">Eraser</button>
             </div>
             <div class="tool-group">
               <button class="btn toggle" id="textModeBtn" title="When on, a word turns into Times New Roman text 2s after you stop writing it">Aa Text mode</button>
@@ -227,10 +228,13 @@ const canvas = document.getElementById('board');
 const ctx = canvas.getContext('2d');
 let drawing = false, strokes = [], currentStroke = [], lastDrawPoint = null;
 let inkColor = '#2B2B2B';
+let eraserActive = false;
 let textElements = [];
 let actions = []; // ordered log of {type:'stroke'|'text', item} so Undo removes the right thing
-const MIN_STROKE_SPACING_PX = 1.6;
-const STROKE_SIMPLIFY_TOLERANCE_PX = 1.35;
+const MIN_STROKE_SPACING_PX = 1.9;
+const STROKE_SIMPLIFY_TOLERANCE_PX = 1.8;
+const INK_WIDTH = 2.4;
+const ERASER_WIDTH = 24;
 
 function resize(){
   const r = canvas.getBoundingClientRect();
@@ -246,22 +250,31 @@ function redraw(){
   const height = canvas.height / devicePixelRatio;
   ctx.clearRect(0,0,width,height);
   function renderStroke(s){
+    ctx.save();
+    ctx.globalCompositeOperation = s.eraser ? 'destination-out' : 'source-over';
     ctx.strokeStyle = s.color;
-    ctx.lineWidth = 2.4;
+    ctx.lineWidth = s.eraser ? ERASER_WIDTH : INK_WIDTH;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     if (s.pts.length === 1) {
-      ctx.beginPath(); ctx.arc(s.pts[0].x, s.pts[0].y, 1.2, 0, Math.PI * 2); ctx.fillStyle = s.color; ctx.fill();
+      ctx.beginPath(); ctx.arc(s.pts[0].x, s.pts[0].y, s.eraser ? ERASER_WIDTH / 2 : INK_WIDTH / 2, 0, Math.PI * 2); ctx.fillStyle = s.color; ctx.fill();
     } else {
       ctx.beginPath();
       ctx.moveTo(s.pts[0].x, s.pts[0].y);
-      for (let i = 1; i < s.pts.length; i++) ctx.lineTo(s.pts[i].x, s.pts[i].y);
+      for (let i = 1; i < s.pts.length - 1; i++) {
+        const midX = (s.pts[i].x + s.pts[i + 1].x) / 2;
+        const midY = (s.pts[i].y + s.pts[i + 1].y) / 2;
+        ctx.quadraticCurveTo(s.pts[i].x, s.pts[i].y, midX, midY);
+      }
+      const last = s.pts[s.pts.length - 1];
+      ctx.lineTo(last.x, last.y);
       ctx.stroke();
     }
+    ctx.restore();
   }
   strokes.forEach(renderStroke);
   if (drawing && currentStroke.length) {
-    renderStroke({pts:simplifyStroke(currentStroke, STROKE_SIMPLIFY_TOLERANCE_PX), color:inkColor});
+    renderStroke({pts:simplifyStroke(currentStroke, STROKE_SIMPLIFY_TOLERANCE_PX), color:inkColor, eraser:eraserActive});
   }
   textElements.forEach(t=>{
     ctx.font = `${t.fontSize}px "Times New Roman", Times, serif`;
@@ -271,22 +284,28 @@ function redraw(){
   });
 }
 
-function drawLiveDot(point, color){
+function drawLiveDot(point, color, eraser = false){
+  ctx.save();
+  ctx.globalCompositeOperation = eraser ? 'destination-out' : 'source-over';
   ctx.fillStyle = color;
   ctx.beginPath();
-  ctx.arc(point.x, point.y, 1.2, 0, Math.PI * 2);
+  ctx.arc(point.x, point.y, eraser ? ERASER_WIDTH / 2 : INK_WIDTH / 2, 0, Math.PI * 2);
   ctx.fill();
+  ctx.restore();
 }
 
-function drawLiveSegment(from, to, color){
+function drawLiveSegment(from, to, color, eraser = false){
+  ctx.save();
+  ctx.globalCompositeOperation = eraser ? 'destination-out' : 'source-over';
   ctx.strokeStyle = color;
-  ctx.lineWidth = 2.4;
+  ctx.lineWidth = eraser ? ERASER_WIDTH : INK_WIDTH;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   ctx.beginPath();
   ctx.moveTo(from.x, from.y);
   ctx.lineTo(to.x, to.y);
   ctx.stroke();
+  ctx.restore();
 }
 
 document.querySelectorAll('.swatch').forEach(sw=>{
@@ -294,7 +313,14 @@ document.querySelectorAll('.swatch').forEach(sw=>{
     document.querySelectorAll('.swatch').forEach(s=>s.classList.remove('active'));
     sw.classList.add('active');
     inkColor = sw.dataset.c;
+    eraserActive = false;
+    document.getElementById('eraserBtn').classList.remove('active');
   });
+});
+
+document.getElementById('eraserBtn').addEventListener('click', ()=>{
+  eraserActive = !eraserActive;
+  document.getElementById('eraserBtn').classList.toggle('active', eraserActive);
 });
 
 document.getElementById('undoBtn').addEventListener('click', ()=>{
@@ -524,8 +550,10 @@ class OneEuroFilter{
   }
   reset(){ this.xPrev = null; this.dxPrev = 0; this.tPrev = null; }
 }
-const filterX = new OneEuroFilter({minCutoff:0.55, beta:0.018});
-const filterY = new OneEuroFilter({minCutoff:0.55, beta:0.018});
+// Low baseline cutoff damps slow handwriting; the higher beta opens the
+// filter quickly during fast, deliberate travel.
+const filterX = new OneEuroFilter({minCutoff:0.38, beta:0.019});
+const filterY = new OneEuroFilter({minCutoff:0.38, beta:0.019});
 
 function setTrackingState(locked, message, state){
   vf.classList.toggle('locked', locked);
@@ -601,7 +629,7 @@ function boardPoint(landmark){
   if (distance <= CURSOR_DEADBAND_PX) return cursorPoint;
   // Slow, tiny hand movements are damped for precise lettering. Deliberate
   // travel retains full gain, so the board never becomes difficult to cross.
-  const gain = distance < 7 ? .38 : distance < 24 ? .72 : 1;
+  const gain = distance < 8 ? .30 : distance < 30 ? .66 : 1;
   cursorPoint = {
     x:Math.max(0, Math.min(rect.width, cursorPoint.x + dx * gain)),
     y:Math.max(0, Math.min(rect.height, cursorPoint.y + dy * gain))
@@ -698,10 +726,10 @@ function finishStroke(){
   const hadStroke = drawing && currentStroke.length;
   if (hadStroke) {
     const simplified = simplifyStroke(currentStroke, STROKE_SIMPLIFY_TOLERANCE_PX);
-    const strokeObj = {pts:applyStraightLineAssist(simplified), color:inkColor};
+    const strokeObj = {pts:applyStraightLineAssist(simplified), color:inkColor, eraser:eraserActive};
     strokes.push(strokeObj);
     actions.push({type:'stroke', item:strokeObj});
-    if (textModeActive) {
+    if (textModeActive && !eraserActive) {
       pendingWordStrokes.push(strokeObj);
       scheduleWordConversion();
     }
@@ -753,8 +781,8 @@ function updateGesture(point, dashboardCursor, pinchDistance, rawPinchDistance){
     if (movement > MIN_STROKE_SPACING_PX) {
       const next = {...point};
       currentStroke.push(next);
+      drawLiveSegment(lastDrawPoint, next, inkColor, eraserActive);
       lastDrawPoint = next;
-      redraw();
     }
   }
 }
