@@ -16,7 +16,7 @@
     --pen:#2B2B2B;
     --focus-green:#147D52;
     --focus-green-dim:#CDEDDD;
-    --copper:#B86B2E;
+    --copper:#3A3F47;
     --text:#172033;
     --text-mute:#667085;
     --text-faint:#98A2B3;
@@ -27,49 +27,45 @@
   .app{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto;height:100dvh;min-height:560px;gap:0;}
 
   /* Top bar */
-  header{grid-column:1;display:flex;align-items:center;justify-content:space-between;padding:14px 28px;border-bottom:1px solid var(--hairline);}
-  .wordmark{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:20px;letter-spacing:0.2px;display:flex;align-items:center;gap:10px;}
-  .wordmark .dot{width:8px;height:8px;border-radius:50%;background:var(--focus-green);box-shadow:0 0 8px var(--focus-green);}
-  .status-pill{display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:0.5px;color:var(--text-mute);background:var(--panel);border:1px solid var(--hairline);padding:6px 12px;border-radius:20px;}
-  .status-pill .led{width:6px;height:6px;border-radius:50%;background:var(--text-faint);transition:all .25s;}
-  .status-pill.locked .led{background:var(--focus-green);box-shadow:0 0 6px var(--focus-green);}
+  header{grid-column:1;display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid var(--hairline);}
+  .wordmark{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;letter-spacing:0.2px;display:flex;align-items:center;gap:8px;}
+  .status-pill{display:flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:0.5px;color:var(--text-mute);background:var(--panel);border:1px solid var(--hairline);padding:4px 10px;border-radius:16px;}
   .status-pill.locked{color:var(--focus-green);border-color:var(--focus-green-dim);}
 
   /* Viewfinder */
-  .stage{position:relative;display:flex;align-items:center;justify-content:center;padding:clamp(6px,1vw,14px);min-height:0;overflow:hidden;}
-  .viewfinder{position:relative;width:100%;height:100%;max-width:none;aspect-ratio:auto;background:#EEF2F6;border:1px solid var(--hairline);border-radius:10px;overflow:hidden;}
+  .stage{position:relative;display:flex;align-items:center;justify-content:center;padding:6px;min-height:0;overflow:hidden;}
+  .viewfinder{position:relative;width:100%;height:100%;max-width:none;aspect-ratio:auto;background:#EEF2F6;border:1px solid var(--hairline);border-radius:8px;overflow:hidden;}
 
-  /* corner brackets - the signature element */
-  .bracket{position:absolute;width:34px;height:34px;border:2.5px solid var(--text-faint);transition:all .35s cubic-bezier(.4,0,.2,1);pointer-events:none;z-index:6;}
-  .bracket.tl{top:14px;left:14px;border-right:none;border-bottom:none;}
-  .bracket.tr{top:14px;right:14px;border-left:none;border-bottom:none;}
-  .bracket.bl{bottom:14px;left:14px;border-right:none;border-top:none;}
-  .bracket.br{bottom:14px;right:14px;border-left:none;border-top:none;}
+  /* corner brackets - smaller */
+  .bracket{position:absolute;width:24px;height:24px;border:2px solid var(--text-faint);transition:all .35s cubic-bezier(.4,0,.2,1);pointer-events:none;z-index:6;}
+  .bracket.tl{top:10px;left:10px;border-right:none;border-bottom:none;}
+  .bracket.tr{top:10px;right:10px;border-left:none;border-bottom:none;}
+  .bracket.bl{bottom:10px;left:10px;border-right:none;border-top:none;}
+  .bracket.br{bottom:10px;right:10px;border-left:none;border-top:none;}
   .viewfinder.locked .bracket{border-color:var(--focus-green);filter:drop-shadow(0 0 6px rgba(76,255,158,.6));}
-  .viewfinder.locked .bracket.tl{top:8px;left:8px;}
-  .viewfinder.locked .bracket.tr{top:8px;right:8px;}
-  .viewfinder.locked .bracket.bl{bottom:8px;left:8px;}
-  .viewfinder.locked .bracket.br{bottom:8px;right:8px;}
+  .viewfinder.locked .bracket.tl{top:6px;left:6px;}
+  .viewfinder.locked .bracket.tr{top:6px;right:6px;}
+  .viewfinder.locked .bracket.bl{bottom:6px;left:6px;}
+  .viewfinder.locked .bracket.br{bottom:6px;right:6px;}
 
   /* The whiteboard now fills the entire reachable gesture area - full bleed,
      no wasted margin - and adapts to whatever viewport it is opened in. */
-  .board-wrap{position:relative;width:100%;height:100%;border-radius:10px;box-shadow:0 14px 32px rgba(30,41,59,.14);background:var(--paper);overflow:hidden;}
-  #board{position:absolute;inset:0;width:100%;height:100%;display:block;background:var(--paper);}
+  .board-wrap{position:relative;width:100%;height:100%;border-radius:8px;box-shadow:0 10px 24px rgba(30,41,59,.12);background:var(--paper);overflow:hidden;}
+  #board{position:absolute;inset:0;width:100%;height:100%;display:block;background:var(--paper);transform-origin:center center;transition:transform .15s ease;}
 
-  /* Floating toolbar - pinned top-left, capped width so it can never reach
-     the camera sidebar on the right. Wraps to extra rows instead of clipping. */
-  .dock{position:absolute;top:14px;left:14px;z-index:4;max-width:min(600px,calc(100% - 200px));max-height:calc(100% - 28px);overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px;background:rgba(255,255,255,.94);backdrop-filter:blur(6px);border:1px solid var(--hairline);border-radius:10px;box-shadow:0 6px 18px rgba(30,41,59,.12);}
+  /* Floating toolbar - more compact */
+  .dock{position:absolute;top:10px;left:10px;z-index:4;max-width:min(550px,calc(100% - 170px));max-height:calc(100% - 20px);overflow-y:auto;padding:8px 10px;display:flex;flex-direction:column;gap:6px;background:rgba(255,255,255,.94);backdrop-filter:blur(6px);border:1px solid var(--hairline);border-radius:8px;box-shadow:0 4px 14px rgba(30,41,59,.1);}
   .dock h4{display:none;}
-  .toolbar-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;}
-  .tool-group{display:flex;align-items:center;gap:7px;padding-left:10px;border-left:1px solid var(--hairline);}
+  .toolbar-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;}
+  .tool-group{display:flex;align-items:center;gap:6px;padding-left:8px;border-left:1px solid var(--hairline);}
   .tool-group:first-child{padding-left:0;border-left:none;}
 
-  .swatches{display:flex;gap:6px;}
-  .swatch{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:transform .15s;flex:0 0 auto;}
-  .swatch:hover{transform:scale(1.12);}
+  .swatches{display:flex;gap:5px;}
+  .swatch{width:20px;height:20px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:transform .15s;flex:0 0 auto;}
+  .swatch:hover{transform:scale(1.1);}
   .swatch.active{border-color:var(--text);}
 
-  .btn{width:auto;min-height:32px;padding:7px 10px;border-radius:7px;border:1px solid var(--hairline);background:var(--panel-2);color:var(--text);font-family:'Inter',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;}
+  .btn{width:auto;min-height:28px;padding:5px 8px;border-radius:6px;border:1px solid var(--hairline);background:var(--panel-2);color:var(--text);font-family:'Inter',sans-serif;font-size:11px;font-weight:500;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;}
   .btn:hover{border-color:var(--text-mute);}
   .btn:active{transform:scale(.98);}
   .btn.primary{background:var(--copper);color:#FFF;border:none;font-weight:600;}
@@ -78,12 +74,17 @@
   .btn.toggle.active{background:var(--focus-green-dim);border-color:var(--focus-green);color:#0B5C3B;font-weight:600;}
   .gesture-hover{outline:3px solid rgba(20,125,82,.38);outline-offset:2px;transform:translateY(-1px);}
 
+  .thickness-group{display:flex;align-items:center;gap:6px;}
+  .thickness-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-mute);white-space:nowrap;}
+  #thicknessSlider{width:70px;accent-color:var(--text);cursor:pointer;}
+  .thickness-value{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-faint);min-width:30px;}
+
+  .zoom-group{display:flex;align-items:center;gap:5px;}
+  .zoom-group .btn{width:26px;min-height:26px;padding:0;font-size:14px;line-height:1;font-weight:600;}
+  .zoom-value{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-faint);min-width:34px;text-align:center;}
+
   .stack,.row2{display:flex;gap:7px;}
 
-  .ai-panel{width:100%;border-top:1px solid var(--hairline);margin-top:2px;padding-top:8px;font-size:12px;line-height:1.5;color:var(--text-mute);display:none;}
-  .ai-panel.show{display:block;}
-  .ai-panel .title{font-family:'Space Grotesk',sans-serif;color:var(--text);font-weight:600;font-size:13px;margin-bottom:4px;}
-  .ai-panel .tag{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--copper);background:rgba(201,138,75,.12);padding:2px 6px;border-radius:4px;margin-bottom:8px;letter-spacing:.4px;}
 
   /* Camera preview + HUD stats - pinned top-right, stacked so they never
      collide with the toolbar on the left. */
@@ -100,7 +101,7 @@
   .hud b{color:var(--text-mute);font-weight:500;}
   .viewfinder.locked .hud b.state{color:var(--focus-green);}
 
-  .tracking-guidance{position:absolute;bottom:16px;left:14px;z-index:3;max-width:260px;padding:7px 10px;border:1px solid #F1C88E;border-radius:7px;background:#FFF8EB;color:#8A4B08;font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.4;opacity:0;transform:translateY(4px);transition:opacity .18s,transform .18s;pointer-events:none;}
+  .tracking-guidance{position:absolute;bottom:16px;left:14px;z-index:3;max-width:260px;padding:7px 10px;border:1px solid #D0D5DD;border-radius:7px;background:#F2F4F7;color:#3A3F47;font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.4;opacity:0;transform:translateY(4px);transition:opacity .18s,transform .18s;pointer-events:none;}
   .tracking-guidance.show{opacity:1;transform:translateY(0);}
 
   .fingertip{position:fixed;z-index:20;width:16px;height:16px;border-radius:50%;border:2px solid var(--focus-green);background:rgba(76,255,158,.15);pointer-events:none;transform:translate(-50%,-50%);transition:opacity .12s,background .12s;box-shadow:0 0 10px rgba(76,255,158,.5);}
@@ -138,8 +139,8 @@
 <div class="app">
 
   <header>
-    <div class="wordmark"><span class="dot"></span>Air canvas</div>
-    <div class="status-pill" id="statusPill"><span class="led"></span><span id="statusText">SEARCHING FOR HAND</span></div>
+    <div class="wordmark">Air canvas</div>
+    <div class="status-pill" id="statusPill"><span id="statusText">SEARCHING FOR HAND</span></div>
   </header>
 
   <div class="stage">
@@ -167,22 +168,26 @@
               <button class="btn ghost" id="clearBtn">Clear</button>
               <button class="btn toggle" id="eraserBtn" title="Use a pinch to erase ink">Eraser</button>
             </div>
-            <div class="tool-group">
-              <button class="btn toggle" id="textModeBtn" title="When on, a word turns into Times New Roman text 2s after you stop writing it">Aa Text mode</button>
+            <div class="tool-group thickness-group">
+              <label class="thickness-label" for="thicknessSlider">Thickness</label>
+              <input type="range" id="thicknessSlider" min="1" max="10" step="0.5" value="2.4">
+              <span class="thickness-value" id="thicknessValue">2.4px</span>
+            </div>
+            <div class="tool-group zoom-group">
+              <button class="btn ghost" id="zoomOutBtn" title="Zoom out">−</button>
+              <span class="zoom-value" id="zoomValue">100%</span>
+              <button class="btn ghost" id="zoomInBtn" title="Zoom in">+</button>
             </div>
             <div class="tool-group">
               <button class="btn" id="cameraBtn">Start camera</button>
               <button class="btn ghost" id="cameraOffBtn" disabled>Camera off</button>
             </div>
             <div class="tool-group">
-              <button class="btn primary" id="cleanupBtn">✦ Clean up</button>
               <button class="btn" id="saveBtn">Save to notes</button>
             </div>
-          </div>
-          <div class="ai-panel" id="aiPanel">
-            <span class="tag">GPT-5.6 · vision</span>
-            <div class="title">"Q3 launch checklist"</div>
-            Transcribed 14 words across 3 lines. Detected a short task list — added as note title and summary below the original ink.
+            <div class="tool-group">
+              <button class="btn toggle" id="modeSwitchBtn">Thumb-Index Mode</button>
+            </div>
           </div>
         </div>
 
@@ -231,15 +236,25 @@ let inkColor = '#2B2B2B';
 let eraserActive = false;
 let textElements = [];
 let actions = []; // ordered log of {type:'stroke'|'text', item} so Undo removes the right thing
-const MIN_STROKE_SPACING_PX = 1.9;
+const MIN_STROKE_SPACING_PX = 2.0;
 const STROKE_SIMPLIFY_TOLERANCE_PX = 1.8;
-const INK_WIDTH = 2.4;
+const INK_WIDTH = 2.4; // default/fallback thickness
+let inkThickness = INK_WIDTH; // live value, controlled by the thickness slider
 const ERASER_WIDTH = 24;
+
+// Zoom is a visual CSS transform on the canvas only (toolbar/camera stay put).
+// The canvas's internal drawing buffer always stays sized to the NATIVE
+// (unzoomed) layout size - zoom never touches it - which is why resize()
+// divides out the current zoomLevel before sizing the backing buffer.
+const ZOOM_MIN = 0.5, ZOOM_MAX = 2.25, ZOOM_STEP = 0.25;
+let zoomLevel = 1;
 
 function resize(){
   const r = canvas.getBoundingClientRect();
-  canvas.width = Math.round(r.width * devicePixelRatio);
-  canvas.height = Math.round(r.height * devicePixelRatio);
+  const nativeWidth = r.width / zoomLevel;
+  const nativeHeight = r.height / zoomLevel;
+  canvas.width = Math.round(nativeWidth * devicePixelRatio);
+  canvas.height = Math.round(nativeHeight * devicePixelRatio);
   ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
   redraw();
 }
@@ -253,11 +268,12 @@ function redraw(){
     ctx.save();
     ctx.globalCompositeOperation = s.eraser ? 'destination-out' : 'source-over';
     ctx.strokeStyle = s.color;
-    ctx.lineWidth = s.eraser ? ERASER_WIDTH : INK_WIDTH;
+    const strokeWidth = s.eraser ? ERASER_WIDTH : (s.thickness || INK_WIDTH);
+    ctx.lineWidth = strokeWidth;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     if (s.pts.length === 1) {
-      ctx.beginPath(); ctx.arc(s.pts[0].x, s.pts[0].y, s.eraser ? ERASER_WIDTH / 2 : INK_WIDTH / 2, 0, Math.PI * 2); ctx.fillStyle = s.color; ctx.fill();
+      ctx.beginPath(); ctx.arc(s.pts[0].x, s.pts[0].y, strokeWidth / 2, 0, Math.PI * 2); ctx.fillStyle = s.color; ctx.fill();
     } else {
       ctx.beginPath();
       ctx.moveTo(s.pts[0].x, s.pts[0].y);
@@ -274,7 +290,8 @@ function redraw(){
   }
   strokes.forEach(renderStroke);
   if (drawing && currentStroke.length) {
-    renderStroke({pts:simplifyStroke(currentStroke, STROKE_SIMPLIFY_TOLERANCE_PX), color:inkColor, eraser:eraserActive});
+    const preview = applyStraightLineAssist(simplifyStroke(currentStroke, STROKE_SIMPLIFY_TOLERANCE_PX));
+    renderStroke({pts:preview, color:inkColor, eraser:eraserActive, thickness:inkThickness});
   }
   textElements.forEach(t=>{
     ctx.font = `${t.fontSize}px "Times New Roman", Times, serif`;
@@ -289,7 +306,7 @@ function drawLiveDot(point, color, eraser = false){
   ctx.globalCompositeOperation = eraser ? 'destination-out' : 'source-over';
   ctx.fillStyle = color;
   ctx.beginPath();
-  ctx.arc(point.x, point.y, eraser ? ERASER_WIDTH / 2 : INK_WIDTH / 2, 0, Math.PI * 2);
+  ctx.arc(point.x, point.y, eraser ? ERASER_WIDTH / 2 : inkThickness / 2, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 }
@@ -298,7 +315,7 @@ function drawLiveSegment(from, to, color, eraser = false){
   ctx.save();
   ctx.globalCompositeOperation = eraser ? 'destination-out' : 'source-over';
   ctx.strokeStyle = color;
-  ctx.lineWidth = eraser ? ERASER_WIDTH : INK_WIDTH;
+  ctx.lineWidth = eraser ? ERASER_WIDTH : inkThickness;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   ctx.beginPath();
@@ -316,6 +333,27 @@ document.querySelectorAll('.swatch').forEach(sw=>{
     eraserActive = false;
     document.getElementById('eraserBtn').classList.remove('active');
   });
+});
+
+const thicknessSlider = document.getElementById('thicknessSlider');
+const thicknessValue = document.getElementById('thicknessValue');
+thicknessSlider.addEventListener('input', ()=>{
+  inkThickness = parseFloat(thicknessSlider.value);
+  thicknessValue.textContent = `${inkThickness.toFixed(1)}px`;
+});
+
+const zoomValue = document.getElementById('zoomValue');
+function applyZoom(){
+  canvas.style.transform = `scale(${zoomLevel})`;
+  zoomValue.textContent = `${Math.round(zoomLevel * 100)}%`;
+}
+document.getElementById('zoomInBtn').addEventListener('click', ()=>{
+  zoomLevel = Math.min(ZOOM_MAX, +(zoomLevel + ZOOM_STEP).toFixed(2));
+  applyZoom();
+});
+document.getElementById('zoomOutBtn').addEventListener('click', ()=>{
+  zoomLevel = Math.max(ZOOM_MIN, +(zoomLevel - ZOOM_STEP).toFixed(2));
+  applyZoom();
 });
 
 document.getElementById('eraserBtn').addEventListener('click', ()=>{
@@ -344,16 +382,49 @@ document.getElementById('clearBtn').addEventListener('click', ()=>{
   pendingWordStrokes = [];
   clearTimeout(wordTimer);
   redraw();
-  document.getElementById('aiPanel').classList.remove('show');
+});
+
+document.getElementById('modeSwitchBtn').addEventListener('click', ()=>{
+  if (currentMode === 'thumb-index') {
+    currentMode = 'keyboard-index';
+    document.getElementById('modeSwitchBtn').textContent = 'Keyboard Index Mode';
+    document.getElementById('modeSwitchBtn').classList.add('active');
+  } else {
+    currentMode = 'thumb-index';
+    document.getElementById('modeSwitchBtn').textContent = 'Thumb-Index Mode';
+    document.getElementById('modeSwitchBtn').classList.remove('active');
+    // Reset drawing state in case we were in the middle of a stroke
+    if (drawing) finishStroke();
+    pinchLatched = false;
+    pinchFrames = 0;
+    releaseFrames = 0;
+  }
+});
+
+document.addEventListener('keydown', (e)=>{
+  if (e.code === 'Space' && !spacebarHeld) {
+    spacebarHeld = true;
+    e.preventDefault(); // Prevent page scroll
+  }
+});
+
+document.addEventListener('keyup', (e)=>{
+  if (e.code === 'Space' && spacebarHeld) {
+    spacebarHeld = false;
+    e.preventDefault();
+    // If we were drawing, finish the stroke
+    if (drawing) {
+      finishStroke();
+    }
+  }
 });
 
 // ---- Text mode: after a 2s pause, only handwriting-like ink is offered to
 // the local OCR. Larger/free-form groups remain raw sketches. ----
-let textModeActive = false;
+const textModeActive = false; // text mode removed - kept as a constant so downstream checks stay inert
 let pendingWordStrokes = [];
 let wordTimer = null;
 const WORD_PAUSE_MS = 2000;
-const textModeBtn = document.getElementById('textModeBtn');
 const wordToast = document.getElementById('wordToast');
 
 function showToast(message, duration = 1800){
@@ -362,18 +433,6 @@ function showToast(message, duration = 1800){
   clearTimeout(showToast._t);
   showToast._t = setTimeout(()=> wordToast.classList.remove('show'), duration);
 }
-
-textModeBtn.addEventListener('click', ()=>{
-  textModeActive = !textModeActive;
-  textModeBtn.classList.toggle('active', textModeActive);
-  textModeBtn.textContent = textModeActive ? '✓ Text mode on' : 'Aa Text mode';
-  if (textModeActive) {
-    showToast('Text mode on — pause 2s after a word to convert it');
-  } else {
-    clearTimeout(wordTimer);
-    pendingWordStrokes = [];
-  }
-});
 
 function scheduleWordConversion(){
   clearTimeout(wordTimer);
@@ -500,23 +559,32 @@ const cameraEmpty = document.getElementById('cameraEmpty');
 const hint = document.getElementById('hint');
 const tip = document.getElementById('fingertip');
 const trackingGuidance = document.getElementById('trackingGuidance');
-// A forgiving close threshold plus a wider release threshold makes pinch
-// recognition easier without repeatedly toggling at the boundary.
-const CLOSE_PINCH_THRESHOLD = 0.25;
-const OPEN_PINCH_THRESHOLD = 0.32;
-const PINCH_CONFIRMATION_FRAMES = 3;
+// A close threshold that still requires real contact (not just proximity)
+// but isn't so strict that it delays recognizing an intentional pinch - this
+// balances the earlier false-positive fix against responsiveness.
+const CLOSE_PINCH_THRESHOLD = 0.24;
+const OPEN_PINCH_THRESHOLD = 0.30;
+// As soon as fingers start separating (crossing this soft midpoint) the
+// stroke stops accepting new points, even though the official release isn't
+// confirmed until OPEN_PINCH_THRESHOLD. This trims the small "hook" a
+// separating hand naturally draws, which is what reads as a release jerk.
+const SOFT_RELEASE_THRESHOLD = (CLOSE_PINCH_THRESHOLD + OPEN_PINCH_THRESHOLD) / 2;
+const PINCH_CONFIRMATION_FRAMES = 1;
 const PINCH_RELEASE_FRAMES = 1;
-const PINCH_SMOOTHING = 0.28;
+const PINCH_SMOOTHING = 0.3;
 const HAND_LOSS_GRACE_MS = 180;
 // The outer part of the camera frame is reserved as a safety margin. Mapping
 // the inner range to the full board means corners remain reachable without
 // pushing a hand out of the webcam view.
 const CAMERA_SAFE_MARGIN = 0.13;
-const CURSOR_DEADBAND_PX = 1.2;
+const CURSOR_DEADBAND_PX = 1.5;
 let hands, cameraRunning = false, lastFrameTime = 0;
 let pinchFrames = 0, releaseFrames = 0, pinchLatched = false, gestureTarget = null, hoveredControl = null;
+let strokeFrozen = false; // true once soft-release has trimmed the tail of the current stroke
 let smoothedPinchDistance = null;
 let lastHandSeenAt = 0, cameraSession = 0, cursorPoint = null;
+let currentMode = 'thumb-index'; // 'thumb-index' or 'keyboard-index'
+let spacebarHeld = false;
 
 // One Euro Filter: a low-pass filter whose cutoff adapts to speed of motion,
 // so a still fingertip is heavily smoothed (no jitter) while a fast stroke
@@ -550,10 +618,9 @@ class OneEuroFilter{
   }
   reset(){ this.xPrev = null; this.dxPrev = 0; this.tPrev = null; }
 }
-// Low baseline cutoff damps slow handwriting; the higher beta opens the
-// filter quickly during fast, deliberate travel.
-const filterX = new OneEuroFilter({minCutoff:0.38, beta:0.019});
-const filterY = new OneEuroFilter({minCutoff:0.38, beta:0.019});
+// Balanced for accuracy and responsiveness
+const filterX = new OneEuroFilter({minCutoff:0.55, beta:0.035});
+const filterY = new OneEuroFilter({minCutoff:0.55, beta:0.035});
 
 function setTrackingState(locked, message, state){
   vf.classList.toggle('locked', locked);
@@ -611,14 +678,30 @@ function visibleCameraPoint(landmark){
   return {x:Math.max(0, Math.min(1, x)), y:Math.max(0, Math.min(1, y))};
 }
 
+// Rolling average of the last few raw landmark positions, applied before the
+// OneEuroFilter. Camera/tracking noise often shows up as single-frame
+// outlier spikes; averaging them out here means the OneEuroFilter downstream
+// sees cleaner input and doesn't mistake noise for intentional movement.
+const RAW_SMOOTHING_WINDOW = 3;
+let rawHistoryX = [], rawHistoryY = [];
+function rollingAverage(history, value, windowSize){
+  history.push(value);
+  if (history.length > windowSize) history.shift();
+  return history.reduce((sum, v) => sum + v, 0) / history.length;
+}
+
 function boardPoint(landmark){
   const rect = boardWrap.getBoundingClientRect();
   const usableRange = 1 - CAMERA_SAFE_MARGIN * 2;
   const cameraX = Math.max(0, Math.min(1, (landmark.x - CAMERA_SAFE_MARGIN) / usableRange));
   const cameraY = Math.max(0, Math.min(1, (landmark.y - CAMERA_SAFE_MARGIN) / usableRange));
   const raw = {x:(1 - cameraX) * rect.width, y:cameraY * rect.height};
+  const averaged = {
+    x:rollingAverage(rawHistoryX, raw.x, RAW_SMOOTHING_WINDOW),
+    y:rollingAverage(rawHistoryY, raw.y, RAW_SMOOTHING_WINDOW)
+  };
   const now = performance.now();
-  const filtered = {x:filterX.filter(raw.x, now), y:filterY.filter(raw.y, now)};
+  const filtered = {x:filterX.filter(averaged.x, now), y:filterY.filter(averaged.y, now)};
   if (!cursorPoint) {
     cursorPoint = filtered;
     return cursorPoint;
@@ -627,9 +710,12 @@ function boardPoint(landmark){
   const dy = filtered.y - cursorPoint.y;
   const distance = Math.hypot(dx, dy);
   if (distance <= CURSOR_DEADBAND_PX) return cursorPoint;
-  // Slow, tiny hand movements are damped for precise lettering. Deliberate
-  // travel retains full gain, so the board never becomes difficult to cross.
-  const gain = distance < 8 ? .30 : distance < 30 ? .66 : 1;
+  // Tuned for accuracy
+  const gain =
+    distance < 4 ? .55 :
+    distance < 12 ? .8 :
+    distance < 25 ? .95 :
+    1;
   cursorPoint = {
     x:Math.max(0, Math.min(rect.width, cursorPoint.x + dx * gain)),
     y:Math.max(0, Math.min(rect.height, cursorPoint.y + dy * gain))
@@ -716,7 +802,10 @@ function applyStraightLineAssist(points){
   }
   // Only correct strokes that are already overwhelmingly line-like. Curves,
   // handwriting loops, and deliberate angled shapes retain every point.
-  if (pathLength / directDistance < 1.16 && maxDeviation < Math.max(5, directDistance * .085)) {
+  // Loosened slightly from the original so a hand that wobbles a little
+  // while still clearly intending a straight line (e.g. crossing a "t" or
+  // underlining) snaps cleanly instead of staying jagged.
+  if (pathLength / directDistance < 1.22 && maxDeviation < Math.max(7, directDistance * .11)) {
     return [{...first}, {...last}];
   }
   return points;
@@ -726,7 +815,7 @@ function finishStroke(){
   const hadStroke = drawing && currentStroke.length;
   if (hadStroke) {
     const simplified = simplifyStroke(currentStroke, STROKE_SIMPLIFY_TOLERANCE_PX);
-    const strokeObj = {pts:applyStraightLineAssist(simplified), color:inkColor, eraser:eraserActive};
+    const strokeObj = {pts:applyStraightLineAssist(simplified), color:inkColor, eraser:eraserActive, thickness:inkThickness};
     strokes.push(strokeObj);
     actions.push({type:'stroke', item:strokeObj});
     if (textModeActive && !eraserActive) {
@@ -737,6 +826,7 @@ function finishStroke(){
   drawing = false;
   currentStroke = [];
   lastDrawPoint = null;
+  strokeFrozen = false;
   if (hadStroke) redraw();
 }
 
@@ -744,45 +834,81 @@ function updateGesture(point, dashboardCursor, pinchDistance, rawPinchDistance){
   const control = controlAt(dashboardCursor);
   setHoveredControl(control);
 
-  if (pinchLatched) {
-    // Pen-up is deliberately driven by the raw measurement. Smoothing is
-    // useful for avoiding noisy pen-down, but it must never add a tail after
-    // the user has visibly separated thumb and index finger.
-    releaseFrames = rawPinchDistance > OPEN_PINCH_THRESHOLD ? releaseFrames + 1 : 0;
-    if (releaseFrames >= PINCH_RELEASE_FRAMES) {
-      finishStroke();
-      pinchLatched = false;
-      pinchFrames = 0;
-      releaseFrames = 0;
-      gestureTarget = null;
-      return;
+  if (currentMode === 'thumb-index') {
+    // Original thumb-index pinch mode
+    if (pinchLatched) {
+      // Pen-up is deliberately driven by the raw measurement. Smoothing is
+      // useful for avoiding noisy pen-down, but it must never add a tail after
+      // the user has visibly separated thumb and index finger.
+      releaseFrames = rawPinchDistance > OPEN_PINCH_THRESHOLD ? releaseFrames + 1 : 0;
+      if (releaseFrames >= PINCH_RELEASE_FRAMES) {
+        finishStroke();
+        pinchLatched = false;
+        pinchFrames = 0;
+        releaseFrames = 0;
+        gestureTarget = null;
+        return;
+      }
+      // Fingers are already visibly separating (past the soft midpoint) even
+      // though the harder release threshold hasn't been crossed yet. Freeze
+      // the stroke here instead of continuing to draw right up to full
+      // separation - that trailing motion is what reads as a jerky "hook" at
+      // the end of a letter.
+      if (!strokeFrozen && rawPinchDistance > SOFT_RELEASE_THRESHOLD) {
+        strokeFrozen = true;
+      }
     }
-  }
 
-  if (!pinchLatched) {
-    pinchFrames = pinchDistance < CLOSE_PINCH_THRESHOLD ? pinchFrames + 1 : 0;
-    if (pinchFrames >= PINCH_CONFIRMATION_FRAMES) {
-      pinchLatched = true;
-      gestureTarget = control;
-      if (gestureTarget) {
-        gestureTarget.click();
-      } else if (isOverBoard(dashboardCursor)) {
+    if (!pinchLatched) {
+      pinchFrames = pinchDistance < CLOSE_PINCH_THRESHOLD ? pinchFrames + 1 : 0;
+      if (pinchFrames >= PINCH_CONFIRMATION_FRAMES) {
+        pinchLatched = true;
+        strokeFrozen = false;
+        gestureTarget = control;
+        if (gestureTarget) {
+          gestureTarget.click();
+        } else if (isOverBoard(dashboardCursor)) {
+          drawing = true;
+          currentStroke = [{...point}];
+          lastDrawPoint = {...point};
+          redraw();
+          if (textModeActive) clearTimeout(wordTimer);
+        }
+      }
+    }
+
+    if (drawing && !strokeFrozen) {
+      const movement = Math.hypot(point.x - lastDrawPoint.x, point.y - lastDrawPoint.y);
+      if (movement > MIN_STROKE_SPACING_PX) {
+        currentStroke.push({...point});
+        lastDrawPoint = {...point};
+        redraw();
+      }
+    }
+  } else {
+    // Keyboard + index finger mode
+    if (spacebarHeld) {
+      if (!drawing && isOverBoard(dashboardCursor)) {
+        // Start drawing
         drawing = true;
         currentStroke = [{...point}];
         lastDrawPoint = {...point};
         redraw();
         if (textModeActive) clearTimeout(wordTimer);
+      } else if (drawing) {
+        // Continue drawing
+        const movement = Math.hypot(point.x - lastDrawPoint.x, point.y - lastDrawPoint.y);
+        if (movement > MIN_STROKE_SPACING_PX) {
+          currentStroke.push({...point});
+          lastDrawPoint = {...point};
+          redraw();
+        }
       }
-    }
-  }
-
-  if (drawing) {
-    const movement = Math.hypot(point.x - lastDrawPoint.x, point.y - lastDrawPoint.y);
-    if (movement > MIN_STROKE_SPACING_PX) {
-      const next = {...point};
-      currentStroke.push(next);
-      drawLiveSegment(lastDrawPoint, next, inkColor, eraserActive);
-      lastDrawPoint = next;
+    } else {
+      if (drawing) {
+        // Stop drawing
+        finishStroke();
+      }
     }
   }
 }
@@ -803,7 +929,12 @@ function drawResults(results){
     const point = boardPoint(hand[8]);
     const dashboardCursor = dashboardPoint(point);
     const canvasRect = canvas.getBoundingClientRect();
-    const inkPoint = {x:dashboardCursor.x - canvasRect.left, y:dashboardCursor.y - canvasRect.top};
+    // canvasRect reflects the current zoomed size; dividing by zoomLevel
+    // converts back to the canvas's native drawing coordinate space.
+    const inkPoint = {
+      x:(dashboardCursor.x - canvasRect.left) / zoomLevel,
+      y:(dashboardCursor.y - canvasRect.top) / zoomLevel
+    };
     updateGesture(inkPoint, dashboardCursor, pinchDistance, rawPinchDistance);
     showCursor(dashboardCursor, drawing || pinchLatched);
     hudDist.textContent = pinchDistance.toFixed(3);
@@ -811,17 +942,24 @@ function drawResults(results){
     const isDrawing = drawing;
     const isSelecting = pinchLatched && Boolean(gestureTarget);
     setTrackingState(true, isDrawing ? 'DRAWING' : isSelecting ? 'SELECTING' : 'HAND DETECTED', isDrawing || isSelecting ? 'PINCHING' : 'READY');
-    hint.textContent = isDrawing ? 'pinch held - drawing' : isSelecting ? 'pinch selected dashboard control' : 'pinch index finger and thumb to write or select';
+    if (currentMode === 'thumb-index') {
+      hint.textContent = isDrawing ? 'pinch held - drawing' : isSelecting ? 'pinch selected dashboard control' : 'pinch index finger and thumb to write or select';
+    } else {
+      hint.textContent = isDrawing ? 'spacebar held - drawing with index finger' : 'hold spacebar and use index finger to write';
+    }
     showGuidance(handGuidance(hand));
   } else {
     if (performance.now() - lastHandSeenAt > HAND_LOSS_GRACE_MS) {
       finishStroke();
       filterX.reset();
       filterY.reset();
+      rawHistoryX = [];
+      rawHistoryY = [];
       cursorPoint = null;
       pinchFrames = 0;
       releaseFrames = 0;
       pinchLatched = false;
+      strokeFrozen = false;
       smoothedPinchDistance = null;
       gestureTarget = null;
       tip.style.opacity = '0';
@@ -885,10 +1023,13 @@ function stopCamera(){
   pinchFrames = 0;
   releaseFrames = 0;
   pinchLatched = false;
+  strokeFrozen = false;
   smoothedPinchDistance = null;
   gestureTarget = null;
   filterX.reset();
   filterY.reset();
+  rawHistoryX = [];
+  rawHistoryY = [];
   clearTimeout(wordTimer);
   if (textModeActive && pendingWordStrokes.length) convertPendingWordToText();
   setHoveredControl(null);
@@ -911,10 +1052,6 @@ function stopCamera(){
 }
 cameraOffBtn.addEventListener('click', stopCamera);
 window.addEventListener('resize', resizeOverlay);
-
-document.getElementById('cleanupBtn').addEventListener('click', ()=>{
-  document.getElementById('aiPanel').classList.add('show');
-});
 
 document.getElementById('saveBtn').addEventListener('click', ()=>{
   const filmstrip = document.querySelector('.filmstrip');
