@@ -20,6 +20,9 @@ The product deliberately prioritizes raw ink over handwriting replacement. A fut
 - Three-frame confirmation for pen-down, so a near-pinch does not immediately start drawing.
 - 2D pinch measurement to better accommodate different hand angles.
 - Smoothed fingertip position and interpolated strokes to reduce camera jitter.
+- A protected camera-to-board mapping: the inner 74% of the webcam range reaches all board edges, so corners are accessible without leaving the camera frame.
+- Low-speed cursor damping and a pixel deadband for more controlled small lettering while preserving full-speed travel across the board.
+- Optional local Text mode using Tesseract.js; it only attempts handwriting-like, compact stroke groups and leaves likely sketches as raw ink.
 - Undo, clear, ink color selection, and local note-thumbnail previews.
 - Responsive light-mode interface that maximizes the available whiteboard area on laptop and smaller displays.
 - Live framing guidance when a hand is too close, too far, or near the camera-frame boundary.
@@ -87,6 +90,9 @@ The human collaborator made the key product calls: keeping the UI minimal, prior
 | 5. Visual refinement | Converted the interface to light mode, made the board viewport-responsive, and added a compact camera preview. |
 | 6. Jitter and guidance | Added position/stroke smoothing and on-screen guidance for hand framing and camera distance. |
 | 7. Current refinement | Enlarged the board inset and lowered the pen-up threshold to make release more immediate. Stroke thickness/appearance remains an intentional item for further tuning. |
+| 8. Precision and reachability | Added a safe camera margin mapped to the full board, adaptive low-speed cursor damping, and a deadband to reduce slow-motion jitter. Text mode now rejects obviously sketch-like groups before local OCR. |
+| 9. Stroke fidelity | Replaced post-stroke curve fitting with geometry-preserving line rendering, made pen-up use the unsmoothed pinch signal, and added a conservative straight-line assist for genuinely line-like strokes. |
+| 10. Stable live ink | Added distance-based point sampling and Ramer–Douglas–Peucker simplification to both active and completed strokes, removing micro-jitter without bending straight paths. |
 
 ## Next steps
 

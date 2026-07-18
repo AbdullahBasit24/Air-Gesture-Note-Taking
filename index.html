@@ -229,6 +229,8 @@ let drawing = false, strokes = [], currentStroke = [], lastDrawPoint = null;
 let inkColor = '#2B2B2B';
 let textElements = [];
 let actions = []; // ordered log of {type:'stroke'|'text', item} so Undo removes the right thing
+const MIN_STROKE_SPACING_PX = 1.6;
+const STROKE_SIMPLIFY_TOLERANCE_PX = 1.35;
 
 function resize(){
   const r = canvas.getBoundingClientRect();
@@ -253,17 +255,14 @@ function redraw(){
     } else {
       ctx.beginPath();
       ctx.moveTo(s.pts[0].x, s.pts[0].y);
-      for (let i = 1; i < s.pts.length - 1; i++) {
-        const mid = {x:(s.pts[i].x + s.pts[i + 1].x) / 2, y:(s.pts[i].y + s.pts[i + 1].y) / 2};
-        ctx.quadraticCurveTo(s.pts[i].x, s.pts[i].y, mid.x, mid.y);
-      }
-      const lastPoint = s.pts[s.pts.length - 1];
-      ctx.lineTo(lastPoint.x, lastPoint.y);
+      for (let i = 1; i < s.pts.length; i++) ctx.lineTo(s.pts[i].x, s.pts[i].y);
       ctx.stroke();
     }
   }
   strokes.forEach(renderStroke);
-  if (drawing && currentStroke.length) renderStroke({pts:currentStroke, color:inkColor});
+  if (drawing && currentStroke.length) {
+    renderStroke({pts:simplifyStroke(currentStroke, STROKE_SIMPLIFY_TOLERANCE_PX), color:inkColor});
+  }
   textElements.forEach(t=>{
     ctx.font = `${t.fontSize}px "Times New Roman", Times, serif`;
     ctx.fillStyle = t.color;
@@ -322,8 +321,8 @@ document.getElementById('clearBtn').addEventListener('click', ()=>{
   document.getElementById('aiPanel').classList.remove('show');
 });
 
-// ---- Text mode: after a 2s pause following a written word, swap the ink
-// for real Times New Roman text using client-side OCR (Tesseract.js). ----
+// ---- Text mode: after a 2s pause, only handwriting-like ink is offered to
+// the local OCR. Larger/free-form groups remain raw sketches. ----
 let textModeActive = false;
 let pendingWordStrokes = [];
 let wordTimer = null;
@@ -388,6 +387,14 @@ async function convertPendingWordToText(){
   minX -= pad; minY -= pad; maxX += pad; maxY += pad;
   const boxW = Math.max(24, maxX - minX);
   const boxH = Math.max(24, maxY - minY);
+  const boardRect = canvas.getBoundingClientRect();
+  const isLikelyWriting = wordStrokes.length <= 14 &&
+    boxW < boardRect.width * .48 && boxH < boardRect.height * .28 &&
+    boxH > 10;
+  if (!isLikelyWriting) {
+    showToast('That looks like a sketch — keeping the original ink');
+    return;
+  }
   // OCR needs a substantially larger, high-contrast sample than the on-screen
   // ink. This normalizes small air-written letters to about 220px high.
   const scale = Math.min(8, Math.max(4, 220 / boxH));
@@ -430,7 +437,7 @@ async function convertPendingWordToText(){
     const worker = await getOcrWorker();
     const {data} = await worker.recognize(off);
     const recognized = (data.text || '').replace(/\s+/g, ' ').trim();
-    if (recognized) {
+    if (recognized && data.confidence >= 45) {
       wordStrokes.forEach(s => {
         const idx = strokes.indexOf(s);
         if (idx > -1) strokes.splice(idx, 1);
@@ -472,13 +479,18 @@ const trackingGuidance = document.getElementById('trackingGuidance');
 const CLOSE_PINCH_THRESHOLD = 0.25;
 const OPEN_PINCH_THRESHOLD = 0.32;
 const PINCH_CONFIRMATION_FRAMES = 3;
-const PINCH_RELEASE_FRAMES = 3;
+const PINCH_RELEASE_FRAMES = 1;
 const PINCH_SMOOTHING = 0.28;
 const HAND_LOSS_GRACE_MS = 180;
+// The outer part of the camera frame is reserved as a safety margin. Mapping
+// the inner range to the full board means corners remain reachable without
+// pushing a hand out of the webcam view.
+const CAMERA_SAFE_MARGIN = 0.13;
+const CURSOR_DEADBAND_PX = 1.2;
 let hands, cameraRunning = false, lastFrameTime = 0;
 let pinchFrames = 0, releaseFrames = 0, pinchLatched = false, gestureTarget = null, hoveredControl = null;
 let smoothedPinchDistance = null;
-let lastHandSeenAt = 0, cameraSession = 0;
+let lastHandSeenAt = 0, cameraSession = 0, cursorPoint = null;
 
 // One Euro Filter: a low-pass filter whose cutoff adapts to speed of motion,
 // so a still fingertip is heavily smoothed (no jitter) while a fast stroke
@@ -512,8 +524,8 @@ class OneEuroFilter{
   }
   reset(){ this.xPrev = null; this.dxPrev = 0; this.tPrev = null; }
 }
-const filterX = new OneEuroFilter();
-const filterY = new OneEuroFilter();
+const filterX = new OneEuroFilter({minCutoff:0.55, beta:0.018});
+const filterY = new OneEuroFilter({minCutoff:0.55, beta:0.018});
 
 function setTrackingState(locked, message, state){
   vf.classList.toggle('locked', locked);
@@ -573,10 +585,28 @@ function visibleCameraPoint(landmark){
 
 function boardPoint(landmark){
   const rect = boardWrap.getBoundingClientRect();
-  // The full camera range maps to the full board surface.
-  const raw = {x:(1 - landmark.x) * rect.width, y:landmark.y * rect.height};
+  const usableRange = 1 - CAMERA_SAFE_MARGIN * 2;
+  const cameraX = Math.max(0, Math.min(1, (landmark.x - CAMERA_SAFE_MARGIN) / usableRange));
+  const cameraY = Math.max(0, Math.min(1, (landmark.y - CAMERA_SAFE_MARGIN) / usableRange));
+  const raw = {x:(1 - cameraX) * rect.width, y:cameraY * rect.height};
   const now = performance.now();
-  return {x: filterX.filter(raw.x, now), y: filterY.filter(raw.y, now)};
+  const filtered = {x:filterX.filter(raw.x, now), y:filterY.filter(raw.y, now)};
+  if (!cursorPoint) {
+    cursorPoint = filtered;
+    return cursorPoint;
+  }
+  const dx = filtered.x - cursorPoint.x;
+  const dy = filtered.y - cursorPoint.y;
+  const distance = Math.hypot(dx, dy);
+  if (distance <= CURSOR_DEADBAND_PX) return cursorPoint;
+  // Slow, tiny hand movements are damped for precise lettering. Deliberate
+  // travel retains full gain, so the board never becomes difficult to cross.
+  const gain = distance < 7 ? .38 : distance < 24 ? .72 : 1;
+  cursorPoint = {
+    x:Math.max(0, Math.min(rect.width, cursorPoint.x + dx * gain)),
+    y:Math.max(0, Math.min(rect.height, cursorPoint.y + dy * gain))
+  };
+  return cursorPoint;
 }
 
 function dashboardPoint(boardPoint){
@@ -616,10 +646,59 @@ function smoothPinchDistance(rawDistance){
   return smoothedPinchDistance;
 }
 
+function simplifyStroke(points, tolerance){
+  if (points.length < 3) return points;
+  const keep = new Uint8Array(points.length);
+  keep[0] = keep[points.length - 1] = 1;
+  const pending = [[0, points.length - 1]];
+  while (pending.length) {
+    const [start, end] = pending.pop();
+    const a = points[start], b = points[end];
+    const base = Math.hypot(b.x - a.x, b.y - a.y);
+    let farthest = -1, farthestDistance = 0;
+    for (let i = start + 1; i < end; i++) {
+      const p = points[i];
+      const distance = base
+        ? Math.abs((b.y - a.y) * p.x - (b.x - a.x) * p.y + b.x * a.y - b.y * a.x) / base
+        : Math.hypot(p.x - a.x, p.y - a.y);
+      if (distance > farthestDistance) { farthestDistance = distance; farthest = i; }
+    }
+    if (farthest >= 0 && farthestDistance > tolerance) {
+      keep[farthest] = 1;
+      pending.push([start, farthest], [farthest, end]);
+    }
+  }
+  return points.filter((_, index) => keep[index]);
+}
+
+function applyStraightLineAssist(points){
+  if (points.length < 4) return points;
+  const first = points[0];
+  const last = points[points.length - 1];
+  const directDistance = Math.hypot(last.x - first.x, last.y - first.y);
+  if (directDistance < 30) return points;
+  let pathLength = 0;
+  let maxDeviation = 0;
+  for (let i = 1; i < points.length; i++) {
+    pathLength += Math.hypot(points[i].x - points[i - 1].x, points[i].y - points[i - 1].y);
+  }
+  for (const point of points) {
+    const deviation = Math.abs((last.y - first.y) * point.x - (last.x - first.x) * point.y + last.x * first.y - last.y * first.x) / directDistance;
+    maxDeviation = Math.max(maxDeviation, deviation);
+  }
+  // Only correct strokes that are already overwhelmingly line-like. Curves,
+  // handwriting loops, and deliberate angled shapes retain every point.
+  if (pathLength / directDistance < 1.16 && maxDeviation < Math.max(5, directDistance * .085)) {
+    return [{...first}, {...last}];
+  }
+  return points;
+}
+
 function finishStroke(){
   const hadStroke = drawing && currentStroke.length;
   if (hadStroke) {
-    const strokeObj = {pts:currentStroke, color:inkColor};
+    const simplified = simplifyStroke(currentStroke, STROKE_SIMPLIFY_TOLERANCE_PX);
+    const strokeObj = {pts:applyStraightLineAssist(simplified), color:inkColor};
     strokes.push(strokeObj);
     actions.push({type:'stroke', item:strokeObj});
     if (textModeActive) {
@@ -633,12 +712,15 @@ function finishStroke(){
   if (hadStroke) redraw();
 }
 
-function updateGesture(point, dashboardCursor, pinchDistance){
+function updateGesture(point, dashboardCursor, pinchDistance, rawPinchDistance){
   const control = controlAt(dashboardCursor);
   setHoveredControl(control);
 
   if (pinchLatched) {
-    releaseFrames = pinchDistance > OPEN_PINCH_THRESHOLD ? releaseFrames + 1 : 0;
+    // Pen-up is deliberately driven by the raw measurement. Smoothing is
+    // useful for avoiding noisy pen-down, but it must never add a tail after
+    // the user has visibly separated thumb and index finger.
+    releaseFrames = rawPinchDistance > OPEN_PINCH_THRESHOLD ? releaseFrames + 1 : 0;
     if (releaseFrames >= PINCH_RELEASE_FRAMES) {
       finishStroke();
       pinchLatched = false;
@@ -660,7 +742,7 @@ function updateGesture(point, dashboardCursor, pinchDistance){
         drawing = true;
         currentStroke = [{...point}];
         lastDrawPoint = {...point};
-        drawLiveDot(point, inkColor);
+        redraw();
         if (textModeActive) clearTimeout(wordTimer);
       }
     }
@@ -668,11 +750,11 @@ function updateGesture(point, dashboardCursor, pinchDistance){
 
   if (drawing) {
     const movement = Math.hypot(point.x - lastDrawPoint.x, point.y - lastDrawPoint.y);
-    if (movement > 0.7) {
+    if (movement > MIN_STROKE_SPACING_PX) {
       const next = {...point};
       currentStroke.push(next);
-      drawLiveSegment(lastDrawPoint, next, inkColor);
       lastDrawPoint = next;
+      redraw();
     }
   }
 }
@@ -694,7 +776,7 @@ function drawResults(results){
     const dashboardCursor = dashboardPoint(point);
     const canvasRect = canvas.getBoundingClientRect();
     const inkPoint = {x:dashboardCursor.x - canvasRect.left, y:dashboardCursor.y - canvasRect.top};
-    updateGesture(inkPoint, dashboardCursor, pinchDistance);
+    updateGesture(inkPoint, dashboardCursor, pinchDistance, rawPinchDistance);
     showCursor(dashboardCursor, drawing || pinchLatched);
     hudDist.textContent = pinchDistance.toFixed(3);
     lastHandSeenAt = performance.now();
@@ -708,6 +790,7 @@ function drawResults(results){
       finishStroke();
       filterX.reset();
       filterY.reset();
+      cursorPoint = null;
       pinchFrames = 0;
       releaseFrames = 0;
       pinchLatched = false;
