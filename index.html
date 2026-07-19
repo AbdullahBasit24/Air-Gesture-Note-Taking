@@ -61,10 +61,39 @@
   .tool-group{display:flex;align-items:center;gap:6px;padding-left:8px;border-left:1px solid var(--hairline);}
   .tool-group:first-child{padding-left:0;border-left:none;}
 
-  .swatches{display:flex;gap:5px;}
+  .swatches{display:flex;gap:5px;align-items:center;position:relative;}
   .swatch{width:20px;height:20px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:transform .15s;flex:0 0 auto;}
   .swatch:hover{transform:scale(1.1);}
   .swatch.active{border-color:var(--text);}
+  .swatch-wheel{
+    background:conic-gradient(#E53935,#FB8C00,#FDD835,#43A047,#1E88E5,#8E24AA,#E53935);
+    position:relative;border:none;padding:0;
+  }
+  .swatch-wheel::after{
+    content:'';
+    position:absolute;inset:3px;border-radius:50%;
+    background:var(--panel-2);
+    box-shadow:inset 0 0 0 1px rgba(0,0,0,.06);
+    pointer-events:none;
+  }
+  .swatch-wheel.active{border-color:var(--focus-green);box-shadow:0 0 0 2px var(--focus-green-dim);}
+  .swatch.custom-swatch{display:none;}
+  .swatch.custom-swatch.visible{display:block;}
+  .color-wheel-popover{
+    position:fixed;z-index:100;
+    display:none;flex-direction:column;align-items:center;gap:8px;
+    padding:10px;background:#fff;border:1px solid var(--hairline);
+    border-radius:10px;box-shadow:0 8px 24px rgba(30,41,59,.16);
+  }
+  .color-wheel-popover.open{display:flex;}
+  .color-wheel-popover canvas{display:block;cursor:crosshair;border-radius:50%;}
+  .color-wheel-controls{display:flex;align-items:center;gap:8px;width:100%;}
+  .color-wheel-preview{width:24px;height:24px;border-radius:50%;border:1px solid var(--hairline);flex:0 0 auto;}
+  .color-wheel-lightness{flex:1;accent-color:var(--text);cursor:pointer;}
+  .color-wheel-hex{
+    width:62px;padding:3px 6px;border:1px solid var(--hairline);border-radius:5px;
+    font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;
+  }
 
   .btn{width:auto;min-height:28px;padding:5px 8px;border-radius:6px;border:1px solid var(--hairline);background:var(--panel-2);color:var(--text);font-family:'Inter',sans-serif;font-size:11px;font-weight:500;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap;}
   .btn:hover{border-color:var(--text-mute);}
@@ -95,7 +124,9 @@
   .preview{position:relative;width:100%;aspect-ratio:4/3;border-radius:7px;overflow:hidden;background:#101419;border:2px solid #FFF;box-shadow:0 5px 14px rgba(30,41,59,.18);flex:0 0 auto;}
   #webcam,#handOverlay{position:absolute;inset:0;width:100%;height:100%;display:block;}
   #webcam{object-fit:cover;transform:scaleX(-1);opacity:.92;}
-  #handOverlay{pointer-events:none;transform:scaleX(-1);}
+  /* Landmark coordinates are mapped in JavaScript so they can account for
+     both the mirrored selfie preview and its object-fit crop. */
+  #handOverlay{pointer-events:none;}
   .camera-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:10px;background:#EEF2F6;color:var(--text-mute);font-size:10.5px;line-height:1.4;}
   .camera-empty strong{display:block;color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:14px;margin-bottom:4px;}
   .camera-empty.hidden{display:none;}
@@ -122,8 +153,10 @@
   .guideline-item{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-mute);white-space:nowrap;}
   .note-card{flex:0 0 auto;width:110px;height:78px;background:var(--paper);border-radius:4px;position:relative;box-shadow:0 6px 14px rgba(30,41,59,.16);cursor:pointer;overflow:hidden;transition:transform .15s;}
   .note-card:hover{transform:translateY(-3px);}
-  .note-card svg{position:absolute;inset:0;width:100%;height:100%;}
+  .note-card svg,.note-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;}
   .note-card .label{position:absolute;bottom:0;left:0;right:0;background:rgba(23,32,51,.78);color:var(--paper);font-family:'JetBrains Mono',monospace;font-size:8.5px;padding:3px 5px;letter-spacing:.3px;}
+  .download-note{position:absolute;right:3px;bottom:3px;z-index:2;width:17px;height:17px;padding:0;border:0;border-radius:3px;background:rgba(255,255,255,.92);color:var(--text);font-size:11px;line-height:17px;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.22);}
+  .download-note:hover{background:#fff;color:var(--focus-green);}
   .note-card.empty{display:flex;align-items:center;justify-content:center;background:var(--panel-2);border:1px dashed var(--hairline);color:var(--text-faint);font-size:20px;font-weight:300;}
   @media (max-width:850px){
     .app{grid-template-columns:1fr;grid-template-rows:auto minmax(340px,1fr) auto;height:auto;min-height:100dvh;}
@@ -249,6 +282,16 @@
         <div class="swatch" data-c="#1E4FB0" style="background:#1E4FB0"></div>
         <div class="swatch" data-c="#B0271E" style="background:#B0271E"></div>
         <div class="swatch" data-c="#1E7A4C" style="background:#1E7A4C"></div>
+        <div class="swatch custom-swatch" id="customSwatch" data-c="#7B61FF" style="background:#7B61FF"></div>
+        <button type="button" class="swatch swatch-wheel" id="colorWheelBtn" title="Pick a custom color" aria-label="Open color wheel"></button>
+        <div class="color-wheel-popover" id="colorWheelPopover">
+          <canvas id="colorWheelCanvas" width="168" height="168" aria-label="Color wheel"></canvas>
+          <div class="color-wheel-controls">
+            <span class="color-wheel-preview" id="colorWheelPreview"></span>
+            <input type="range" class="color-wheel-lightness" id="colorWheelLightness" min="15" max="85" value="45" title="Lightness">
+            <input type="text" class="color-wheel-hex" id="colorWheelHex" value="#2B2B2B" maxlength="7" spellcheck="false">
+          </div>
+        </div>
       </div>
       <div class="tool-group">
         <button class="btn ghost" id="undoBtn">Undo</button>
@@ -267,9 +310,6 @@
       </div>
       <div class="tool-group">
         <button class="btn camera-toggle" id="cameraToggleBtn">Start Camera</button>
-      </div>
-      <div class="tool-group">
-        <button class="btn" id="saveBtn">Save to notes</button>
       </div>
       <div class="tool-group">
         <button class="btn toggle" id="modeSwitchBtn">Thumb-Index Mode</button>
@@ -311,12 +351,12 @@
   <div class="filmstrip">
     <div class="filmstrip-left">
       <h5>Notes</h5>
-      <div class="note-card empty" id="addCard">+</div>
+      <button type="button" class="note-card empty" id="addCard" aria-label="Save current note" title="Save current note">+</button>
     </div>
     <div class="filmstrip-right">
       <div class="guideline-item">1. Turn on camera</div>
       <div class="guideline-item">2. Pinch thumb+index to draw</div>
-      <div class="guideline-item">3. Or hold Enter + move index</div>
+      <div class="guideline-item">3. Or hold Space/Enter + move index</div>
     </div>
   </div>
 
@@ -353,11 +393,12 @@ const boardWrap = document.querySelector('.board-wrap');
 const canvas = document.getElementById('board');
 const ctx = canvas.getContext('2d');
 let drawing = false, strokes = [], currentStroke = [], lastDrawPoint = null;
+let strokeSettlingFrames = 0;
 let inkColor = '#2B2B2B';
 let eraserActive = false;
 let textElements = [];
 let actions = []; // ordered log of {type:'stroke'|'text', item} so Undo removes the right thing
-const MIN_STROKE_SPACING_PX = 1.5; // Touchscreen-like, more frequent points
+const MIN_STROKE_SPACING_PX = 2.2; // Ignore tracker-scale micro-jitter in ink
 const STROKE_SIMPLIFY_TOLERANCE_PX = 1.2; // Keep the line true to movement
 const INK_WIDTH = 2.4; // default/fallback thickness
 let inkThickness = INK_WIDTH; // live value, controlled by the thickness slider
@@ -446,14 +487,235 @@ function drawLiveSegment(from, to, color, eraser = false){
   ctx.restore();
 }
 
-document.querySelectorAll('.swatch').forEach(sw=>{
-  sw.addEventListener('click', ()=>{
-    document.querySelectorAll('.swatch').forEach(s=>s.classList.remove('active'));
-    sw.classList.add('active');
-    inkColor = sw.dataset.c;
-    eraserActive = false;
-    document.getElementById('eraserBtn').classList.remove('active');
-  });
+document.querySelectorAll('.swatch:not(.swatch-wheel)').forEach(sw=>{
+  sw.addEventListener('click', ()=> setInkColor(sw.dataset.c, sw));
+});
+
+function setInkColor(color, activeEl){
+  inkColor = color;
+  eraserActive = false;
+  document.getElementById('eraserBtn').classList.remove('active');
+  document.querySelectorAll('.swatch:not(.swatch-wheel)').forEach(s=>s.classList.remove('active'));
+  if (activeEl) activeEl.classList.add('active');
+  else {
+    const match = [...document.querySelectorAll('.swatch:not(.swatch-wheel)')]
+      .find(s => s.dataset.c?.toLowerCase() === color.toLowerCase());
+    match?.classList.add('active');
+  }
+}
+
+// ---- Custom color wheel ----
+const colorWheelBtn = document.getElementById('colorWheelBtn');
+const colorWheelPopover = document.getElementById('colorWheelPopover');
+const colorWheelCanvas = document.getElementById('colorWheelCanvas');
+const colorWheelCtx = colorWheelCanvas.getContext('2d');
+const colorWheelPreview = document.getElementById('colorWheelPreview');
+const colorWheelLightness = document.getElementById('colorWheelLightness');
+const colorWheelHex = document.getElementById('colorWheelHex');
+const customSwatch = document.getElementById('customSwatch');
+let wheelLightness = 45;
+let wheelMarker = {x: colorWheelCanvas.width / 2, y: colorWheelCanvas.height / 2};
+
+function hslToHex(h, s, l){
+  s /= 100; l /= 100;
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+  const m = l - c / 2;
+  let r = 0, g = 0, b = 0;
+  if (h < 60) [r, g, b] = [c, x, 0];
+  else if (h < 120) [r, g, b] = [x, c, 0];
+  else if (h < 180) [r, g, b] = [0, c, x];
+  else if (h < 240) [r, g, b] = [0, x, c];
+  else if (h < 300) [r, g, b] = [x, 0, c];
+  else [r, g, b] = [c, 0, x];
+  const toHex = v => Math.round((v + m) * 255).toString(16).padStart(2, '0');
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`.toUpperCase();
+}
+
+function hexToHsl(hex){
+  const raw = hex.replace('#', '');
+  if (raw.length !== 6) return null;
+  const r = parseInt(raw.slice(0, 2), 16) / 255;
+  const g = parseInt(raw.slice(2, 4), 16) / 255;
+  const b = parseInt(raw.slice(4, 6), 16) / 255;
+  const max = Math.max(r, g, b), min = Math.min(r, g, b);
+  const l = (max + min) / 2;
+  if (max === min) return {h:0, s:0, l:l * 100};
+  const d = max - min;
+  const s = l > .5 ? d / (2 - max - min) : d / (max + min);
+  let h;
+  switch (max) {
+    case r: h = ((g - b) / d + (g < b ? 6 : 0)); break;
+    case g: h = ((b - r) / d + 2); break;
+    default: h = ((r - g) / d + 4); break;
+  }
+  return {h:h * 60, s:s * 100, l:l * 100};
+}
+
+function drawColorWheel(){
+  const size = colorWheelCanvas.width;
+  const cx = size / 2, cy = size / 2, radius = size / 2 - 2;
+  colorWheelCtx.clearRect(0, 0, size, size);
+  for (let angle = 0; angle < 360; angle++) {
+    const start = (angle - 1) * Math.PI / 180;
+    const end = (angle + 1.5) * Math.PI / 180;
+    colorWheelCtx.beginPath();
+    colorWheelCtx.moveTo(cx, cy);
+    colorWheelCtx.arc(cx, cy, radius, start, end);
+    colorWheelCtx.closePath();
+    colorWheelCtx.fillStyle = `hsl(${angle}, 100%, ${wheelLightness}%)`;
+    colorWheelCtx.fill();
+  }
+  const wash = colorWheelCtx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+  wash.addColorStop(0, '#fff');
+  wash.addColorStop(1, 'rgba(255,255,255,0)');
+  colorWheelCtx.fillStyle = wash;
+  colorWheelCtx.beginPath();
+  colorWheelCtx.arc(cx, cy, radius, 0, Math.PI * 2);
+  colorWheelCtx.fill();
+  colorWheelCtx.beginPath();
+  colorWheelCtx.arc(wheelMarker.x, wheelMarker.y, 5, 0, Math.PI * 2);
+  colorWheelCtx.strokeStyle = '#fff';
+  colorWheelCtx.lineWidth = 2;
+  colorWheelCtx.stroke();
+  colorWheelCtx.strokeStyle = '#172033';
+  colorWheelCtx.lineWidth = 1;
+  colorWheelCtx.stroke();
+}
+
+function colorFromWheelPoint(clientX, clientY){
+  const rect = colorWheelCanvas.getBoundingClientRect();
+  const cx = colorWheelCanvas.width / 2, cy = colorWheelCanvas.height / 2;
+  const scaleX = colorWheelCanvas.width / rect.width;
+  const scaleY = colorWheelCanvas.height / rect.height;
+  const px = (clientX - rect.left) * scaleX - cx;
+  const py = (clientY - rect.top) * scaleY - cy;
+  const radius = colorWheelCanvas.width / 2 - 2;
+  const dist = Math.min(radius, Math.hypot(px, py));
+  const angle = (Math.atan2(py, px) * 180 / Math.PI + 360) % 360;
+  const sat = (dist / radius) * 100;
+  wheelMarker = {x: cx + Math.cos(angle * Math.PI / 180) * dist, y: cy + Math.sin(angle * Math.PI / 180) * dist};
+  return hslToHex(angle, sat, wheelLightness);
+}
+
+function applyWheelColor(color){
+  colorWheelPreview.style.background = color;
+  colorWheelHex.value = color;
+  customSwatch.style.background = color;
+  customSwatch.dataset.c = color;
+  customSwatch.classList.add('visible');
+  setInkColor(color, customSwatch);
+  drawColorWheel();
+}
+
+function pickWheelColor(clientX, clientY){
+  applyWheelColor(colorFromWheelPoint(clientX, clientY));
+}
+
+function applyWheelColorFromMarker(){
+  const cx = colorWheelCanvas.width / 2, cy = colorWheelCanvas.height / 2;
+  const px = wheelMarker.x - cx, py = wheelMarker.y - cy;
+  const radius = colorWheelCanvas.width / 2 - 2;
+  const dist = Math.min(radius, Math.hypot(px, py));
+  const angle = (Math.atan2(py, px) * 180 / Math.PI + 360) % 360;
+  const sat = (dist / radius) * 100;
+  applyWheelColor(hslToHex(angle, sat, wheelLightness));
+}
+
+function syncWheelFromColor(color){
+  const hsl = hexToHsl(color);
+  if (!hsl) return;
+  wheelLightness = Math.round(hsl.l);
+  colorWheelLightness.value = wheelLightness;
+  const radius = colorWheelCanvas.width / 2 - 2;
+  const distance = (hsl.s / 100) * radius;
+  const radians = hsl.h * Math.PI / 180;
+  wheelMarker = {
+    x:colorWheelCanvas.width / 2 + Math.cos(radians) * distance,
+    y:colorWheelCanvas.height / 2 + Math.sin(radians) * distance
+  };
+}
+
+function positionColorWheel(){
+  const buttonRect = colorWheelBtn.getBoundingClientRect();
+  const popoverRect = colorWheelPopover.getBoundingClientRect();
+  const gutter = 10;
+  let left = buttonRect.right - popoverRect.width;
+  left = Math.max(gutter, Math.min(left, window.innerWidth - popoverRect.width - gutter));
+  let top = buttonRect.bottom + 8;
+  if (top + popoverRect.height > window.innerHeight - gutter) {
+    top = buttonRect.top - popoverRect.height - 8;
+  }
+  colorWheelPopover.style.left = `${left}px`;
+  colorWheelPopover.style.top = `${Math.max(gutter, top)}px`;
+  // In the rare case there is insufficient vertical room either way, keep it
+  // visible at the top rather than leaving it clipped below the viewport.
+}
+
+function toggleColorWheel(open){
+  const shouldOpen = open ?? !colorWheelPopover.classList.contains('open');
+  colorWheelPopover.classList.toggle('open', shouldOpen);
+  colorWheelBtn.classList.toggle('active', shouldOpen);
+  if (shouldOpen) {
+    syncWheelFromColor(inkColor);
+    drawColorWheel();
+    colorWheelPreview.style.background = inkColor;
+    colorWheelHex.value = inkColor;
+    positionColorWheel();
+  }
+}
+
+colorWheelBtn.addEventListener('click', (e)=>{
+  e.stopPropagation();
+  toggleColorWheel();
+});
+
+colorWheelCanvas.addEventListener('click', (e)=>{
+  pickWheelColor(e.clientX, e.clientY);
+});
+colorWheelCanvas.addEventListener('pointerdown', (e)=>{
+  e.preventDefault();
+  colorWheelCanvas.setPointerCapture(e.pointerId);
+  pickWheelColor(e.clientX, e.clientY);
+});
+colorWheelCanvas.addEventListener('pointermove', (e)=>{
+  if (!colorWheelCanvas.hasPointerCapture(e.pointerId)) return;
+  pickWheelColor(e.clientX, e.clientY);
+});
+colorWheelCanvas.addEventListener('pointerup', (e)=>{
+  colorWheelCanvas.releasePointerCapture(e.pointerId);
+});
+
+colorWheelLightness.addEventListener('input', ()=>{
+  wheelLightness = Number(colorWheelLightness.value);
+  applyWheelColorFromMarker();
+});
+
+colorWheelHex.addEventListener('change', ()=>{
+  const hex = colorWheelHex.value.trim();
+  if (!/^#[0-9A-Fa-f]{6}$/.test(hex)) return;
+  const hsl = hexToHsl(hex);
+  if (!hsl) return;
+  wheelLightness = Math.round(hsl.l);
+  colorWheelLightness.value = wheelLightness;
+  const radius = colorWheelCanvas.width / 2 - 2;
+  const satDist = (hsl.s / 100) * radius;
+  const rad = hsl.h * Math.PI / 180;
+  wheelMarker = {
+    x: colorWheelCanvas.width / 2 + Math.cos(rad) * satDist,
+    y: colorWheelCanvas.height / 2 + Math.sin(rad) * satDist
+  };
+  applyWheelColor(hex.toUpperCase());
+});
+
+document.addEventListener('click', (e)=>{
+  if (!colorWheelPopover.classList.contains('open')) return;
+  if (colorWheelPopover.contains(e.target) || colorWheelBtn.contains(e.target)) return;
+  toggleColorWheel(false);
+});
+
+window.addEventListener('resize', ()=>{
+  if (colorWheelPopover.classList.contains('open')) positionColorWheel();
 });
 
 const thicknessSlider = document.getElementById('thicknessSlider');
@@ -505,16 +767,27 @@ document.getElementById('clearBtn').addEventListener('click', ()=>{
   redraw();
 });
 
+function isDrawKey(code){
+  return code === 'Space' || code === 'Enter';
+}
+
 document.getElementById('modeSwitchBtn').addEventListener('click', ()=>{
   if (currentMode === 'thumb-index') {
     currentMode = 'keyboard-index';
     document.getElementById('modeSwitchBtn').textContent = 'Keyboard Index Mode';
     document.getElementById('modeSwitchBtn').classList.add('active');
+    if (drawing) finishStroke();
+    pinchLatched = false;
+    pinchFrames = 0;
+    releaseFrames = 0;
+    // Space/Enter should control drawing, not keep the mode button focused
+    // and trigger it again while the user writes.
+    document.getElementById('modeSwitchBtn').blur();
   } else {
     currentMode = 'thumb-index';
     document.getElementById('modeSwitchBtn').textContent = 'Thumb-Index Mode';
     document.getElementById('modeSwitchBtn').classList.remove('active');
-    // Reset drawing state in case we were in the middle of a stroke
+    drawKeyHeld = false;
     if (drawing) finishStroke();
     pinchLatched = false;
     pinchFrames = 0;
@@ -523,25 +796,23 @@ document.getElementById('modeSwitchBtn').addEventListener('click', ()=>{
 });
 
 document.addEventListener('keydown', (e)=>{
-  if (e.code === 'Enter') {
-    e.preventDefault(); // Prevent form submission/other default actions
-    if (!spacebarHeld) {
-      spacebarHeld = true;
-    }
-  }
+  if (currentMode !== 'keyboard-index' || !isDrawKey(e.code)) return;
+  e.preventDefault();
+  if (e.repeat) return;
+  drawKeyHeld = true;
 });
 
 document.addEventListener('keyup', (e)=>{
-  if (e.code === 'Enter') {
-    e.preventDefault();
-    if (spacebarHeld) {
-      spacebarHeld = false;
-      // If we were drawing, finish the stroke
-      if (drawing) {
-        finishStroke();
-      }
-    }
-  }
+  if (currentMode !== 'keyboard-index' || !isDrawKey(e.code)) return;
+  e.preventDefault();
+  drawKeyHeld = false;
+  if (currentMode === 'keyboard-index' && drawing) finishStroke();
+});
+
+window.addEventListener('blur', ()=>{
+  if (!drawKeyHeld) return;
+  drawKeyHeld = false;
+  if (currentMode === 'keyboard-index' && drawing) finishStroke();
 });
 
 // ---- Text mode: after a 2s pause, only handwriting-like ink is offered to
@@ -693,22 +964,38 @@ const OPEN_PINCH_THRESHOLD = 0.30;
 // confirmed until OPEN_PINCH_THRESHOLD. This trims the small "hook" a
 // separating hand naturally draws, which is what reads as a release jerk.
 const SOFT_RELEASE_THRESHOLD = (CLOSE_PINCH_THRESHOLD + OPEN_PINCH_THRESHOLD) / 2;
-const PINCH_CONFIRMATION_FRAMES = 1;
-const PINCH_RELEASE_FRAMES = 1;
+const PINCH_CONFIRMATION_FRAMES = 2;
+const PINCH_RELEASE_FRAMES = 2;
+const PINCH_SETTLE_FRAMES = 4;
+// Symmetric to the engage-side settle: the moment fingers visibly start
+// separating, the last couple of already-recorded points are likely to
+// already include the start of that separation-induced landmark drift, the
+// same artifact that causes the engage-side jump. Trim them off too.
+const RELEASE_TRIM_POINTS = 2;
 const PINCH_SMOOTHING = 0.3;
-const HAND_LOSS_GRACE_MS = 180;
-// The outer part of the camera frame is reserved as a safety margin. Mapping
-// the inner range to the full board means corners remain reachable without
-// pushing a hand out of the webcam view.
-const CAMERA_SAFE_MARGIN = 0.13;
-const CURSOR_DEADBAND_PX = 0.8; // Super responsive, tiny deadband
+const HAND_LOSS_GRACE_MS = 280;
+// The lite tracker is quicker but a touch more lively. Add back a small
+// amount of damping so the cursor feels deliberate rather than twitchy.
+const LANDMARK_SMOOTHING = 0.55;
 let hands, cameraRunning = false, lastFrameTime = 0;
 let pinchFrames = 0, releaseFrames = 0, pinchLatched = false, gestureTarget = null, hoveredControl = null;
 let strokeFrozen = false; // true once soft-release has trimmed the tail of the current stroke
 let smoothedPinchDistance = null;
 let lastHandSeenAt = 0, cameraSession = 0, cursorPoint = null;
 let currentMode = 'thumb-index'; // 'thumb-index' or 'keyboard-index'
-let enterHeld = false;
+let drawKeyHeld = false; // Space or Enter held in keyboard-index mode
+let lastKeyboardStrokeSampleAt = 0;
+const KEYBOARD_STROKE_SAMPLE_MS = 1000 / 30;
+let handLostFrames = 0;
+let smoothedLandmarks = null;
+let lastFingertipNorm = null;
+let trackingJitterScore = 0;
+// Board edges are reached before a fingertip reaches the visible camera edge,
+// so the usable camera range is stretched to fill the board. This is a
+// uniform linear stretch - keep it linear, not a curve, or diagonal strokes
+// stop tracking the hand's actual direction (see boardPoint()).
+const CAMERA_SAFE_MARGIN = 0.18;
+const CURSOR_DEADBAND_PX = 2;
 
 // One Euro Filter: a low-pass filter whose cutoff adapts to speed of motion,
 // so a still fingertip is heavily smoothed (no jitter) while a fast stroke
@@ -742,9 +1029,11 @@ class OneEuroFilter{
   }
   reset(){ this.xPrev = null; this.dxPrev = 0; this.tPrev = null; }
 }
-// Touchscreen-like responsiveness: more responsive at all speeds
-const filterX = new OneEuroFilter({minCutoff:0.7, beta:0.06});
-const filterY = new OneEuroFilter({minCutoff:0.7, beta:0.06});
+// Touchscreen-like responsiveness, with a little more baseline smoothing
+// than pure 1:1 tracking so slow, careful movement doesn't read every last
+// bit of camera jitter as intentional.
+const filterX = new OneEuroFilter({minCutoff:0.45, beta:0.03});
+const filterY = new OneEuroFilter({minCutoff:0.45, beta:0.03});
 
 function setTrackingState(locked, message, state){
   vf.classList.toggle('locked', locked);
@@ -773,6 +1062,37 @@ function showGuidance(message){
   trackingGuidance.classList.toggle('show', Boolean(message));
 }
 
+function smoothLandmarks(hand){
+  if (!smoothedLandmarks) {
+    smoothedLandmarks = hand.map(lm => ({x: lm.x, y: lm.y, z: lm.z}));
+    return smoothedLandmarks;
+  }
+  hand.forEach((lm, i) => {
+    const prev = smoothedLandmarks[i];
+    const blend = 1 - LANDMARK_SMOOTHING;
+    smoothedLandmarks[i] = {
+      x: prev.x + (lm.x - prev.x) * blend,
+      y: prev.y + (lm.y - prev.y) * blend,
+      z: prev.z + (lm.z - prev.z) * blend
+    };
+  });
+  return smoothedLandmarks;
+}
+
+function resetHandTrackingState(){
+  smoothedLandmarks = null;
+  lastFingertipNorm = null;
+  trackingJitterScore = 0;
+  handLostFrames = 0;
+}
+
+function prepareDetectionFrame(){
+  // Sending the video frame directly avoids copying and reallocating a canvas
+  // for every detection. Those copies were the main source of intermittent
+  // stalls while writing. MediaPipe performs its own efficient resize.
+  return video;
+}
+
 function handGuidance(hand){
   const fingertips = [hand[4], hand[8]];
   if (fingertips.some(point => point.x < .07 || point.x > .93 || point.y < .07 || point.y > .93)) {
@@ -781,6 +1101,11 @@ function handGuidance(hand){
   const handSize = landmarkDistance2D(hand[0], hand[9]);
   if (handSize < .12) return 'Move your hand a little closer to the camera.';
   if (handSize > .42) return 'Move your hand slightly farther from the camera.';
+  const indexTip = hand[8];
+  if (indexTip.z > 0.02) return 'Reach your hand a little closer to the camera lens.';
+  if (trackingJitterScore > 0.045) {
+    return 'Hold your hand in front of your face and keep the background simple for steadier tracking.';
+  }
   return '';
 }
 
@@ -802,11 +1127,20 @@ function visibleCameraPoint(landmark){
   return {x:Math.max(0, Math.min(1, x)), y:Math.max(0, Math.min(1, y))};
 }
 
+function previewLandmarks(hand){
+  return hand.map(landmark => {
+    const point = visibleCameraPoint(landmark);
+    // The visible webcam is mirrored, while MediaPipe coordinates are in the
+    // original video space. Mirror only after applying the object-fit crop.
+    return {...landmark, x:1 - point.x, y:point.y};
+  });
+}
+
 // Rolling average of the last few raw landmark positions, applied before the
 // OneEuroFilter. Camera/tracking noise often shows up as single-frame
 // outlier spikes; averaging them out here means the OneEuroFilter downstream
 // sees cleaner input and doesn't mistake noise for intentional movement.
-const RAW_SMOOTHING_WINDOW = 3;
+const RAW_SMOOTHING_WINDOW = 4;
 let rawHistoryX = [], rawHistoryY = [];
 function rollingAverage(history, value, windowSize){
   history.push(value);
@@ -817,9 +1151,23 @@ function rollingAverage(history, value, windowSize){
 function boardPoint(landmark){
   const rect = boardWrap.getBoundingClientRect();
   const usableRange = 1 - CAMERA_SAFE_MARGIN * 2;
-  const cameraX = Math.max(0, Math.min(1, (landmark.x - CAMERA_SAFE_MARGIN) / usableRange));
-  const cameraY = Math.max(0, Math.min(1, (landmark.y - CAMERA_SAFE_MARGIN) / usableRange));
-  const raw = {x:(1 - cameraX) * rect.width, y:cameraY * rect.height};
+  // Linear mapping only. A non-linear "edge easing" curve used to live here,
+  // meant to desensitize small movements near dead-center while still
+  // reaching the board's edges. In practice x and y were each warped
+  // independently based on their own distance from center, which (a) bends
+  // diagonal strokes off their intended direction, since a straight-line hand
+  // movement no longer stays straight once x and y are stretched by
+  // different amounts, and (b) actually amplifies most ordinary handwriting,
+  // since real movement rarely stays at the exact center pixel where the
+  // curve was flat - just off it is where the curve's slope exceeds 1x.
+  const mapCameraAxis = value => Math.max(0, Math.min(1, (value - CAMERA_SAFE_MARGIN) / usableRange));
+  // Use the exact same crop + mirror transformation as the visible webcam
+  // overlay. This keeps the fingertip and board cursor in the same place
+  // even when a camera supplies a different aspect ratio than the preview.
+  const previewPoint = visibleCameraPoint(landmark);
+  const cameraX = mapCameraAxis(1 - previewPoint.x);
+  const cameraY = mapCameraAxis(previewPoint.y);
+  const raw = {x:cameraX * rect.width, y:cameraY * rect.height};
   const averaged = {
     x:rollingAverage(rawHistoryX, raw.x, RAW_SMOOTHING_WINDOW),
     y:rollingAverage(rawHistoryY, raw.y, RAW_SMOOTHING_WINDOW)
@@ -834,11 +1182,11 @@ function boardPoint(landmark){
   const dy = filtered.y - cursorPoint.y;
   const distance = Math.hypot(dx, dy);
   if (distance <= CURSOR_DEADBAND_PX) return cursorPoint;
-  // Touchscreen-like gain: very responsive, minimal damping
+  // Keep fast strokes responsive, with a little more control for small moves.
   const gain =
-    distance < 3 ? .8 :
-    distance < 10 ? .9 :
-    distance < 20 ? .98 :
+    distance < 3 ? .75 :
+    distance < 10 ? .87 :
+    distance < 20 ? .96 :
     1;
   cursorPoint = {
     x:Math.max(0, Math.min(rect.width, cursorPoint.x + dx * gain)),
@@ -862,7 +1210,7 @@ function showCursor(point, pinching){
 
 function controlAt(point){
   const element = document.elementFromPoint(point.x, point.y);
-  const control = element?.closest('header button, .swatch');
+  const control = element?.closest('header button, .swatch, #colorWheelBtn, .color-wheel-popover canvas, .color-wheel-popover input');
   return control && !control.disabled ? control : null;
 }
 
@@ -926,13 +1274,16 @@ function applyStraightLineAssist(points){
   }
   // Only correct strokes that are already overwhelmingly line-like. Curves,
   // handwriting loops, and deliberate angled shapes retain every point.
-  // Loosened slightly from the original so a hand that wobbles a little
-  // while still clearly intending a straight line (e.g. crossing a "t" or
-  // underlining) snaps cleanly instead of staying jagged.
-  if (pathLength / directDistance < 1.22 && maxDeviation < Math.max(7, directDistance * .11)) {
+  // Keep snapping deliberately strict: handwriting should not visibly change
+  // shape at pen-up just because it happened to finish on a straight path.
+  if (pathLength / directDistance < 1.08 && maxDeviation < Math.max(3, directDistance * .035)) {
     return [{...first}, {...last}];
   }
   return points;
+}
+
+function appendLiveStrokePoint(point){
+  drawLiveSegment(lastDrawPoint, point, inkColor, eraserActive);
 }
 
 function finishStroke(){
@@ -950,12 +1301,16 @@ function finishStroke(){
   drawing = false;
   currentStroke = [];
   lastDrawPoint = null;
+  strokeSettlingFrames = 0;
+  lastKeyboardStrokeSampleAt = 0;
   strokeFrozen = false;
   if (hadStroke) redraw();
 }
 
 function updateGesture(point, dashboardCursor, pinchDistance, rawPinchDistance){
-  const control = controlAt(dashboardCursor);
+  // Keyboard mode cannot select dashboard controls, so skip this expensive
+  // layout hit-test on every video frame while the user is writing.
+  const control = currentMode === 'thumb-index' ? controlAt(dashboardCursor) : null;
   setHoveredControl(control);
 
   if (currentMode === 'thumb-index') {
@@ -980,6 +1335,14 @@ function updateGesture(point, dashboardCursor, pinchDistance, rawPinchDistance){
       // the end of a letter.
       if (!strokeFrozen && rawPinchDistance > SOFT_RELEASE_THRESHOLD) {
         strokeFrozen = true;
+        // The last couple of points recorded on the way to this threshold
+        // are also likely tainted by the same separation-induced drift, so
+        // drop them and redraw rather than only stopping future points.
+        if (drawing && currentStroke.length > RELEASE_TRIM_POINTS + 1) {
+          currentStroke.length -= RELEASE_TRIM_POINTS;
+          lastDrawPoint = {...currentStroke[currentStroke.length - 1]};
+          redraw();
+        }
       }
     }
 
@@ -995,44 +1358,45 @@ function updateGesture(point, dashboardCursor, pinchDistance, rawPinchDistance){
           drawing = true;
           currentStroke = [{...point}];
           lastDrawPoint = {...point};
-          redraw();
+          strokeSettlingFrames = PINCH_SETTLE_FRAMES;
           if (textModeActive) clearTimeout(wordTimer);
         }
       }
     }
 
     if (drawing && !strokeFrozen) {
+      // A pinch often makes the fingertip shift for a frame or two. Reset the
+      // stroke origin while it settles so that movement never becomes a hook
+      // at the start of a letter.
+      if (strokeSettlingFrames > 0) {
+        currentStroke[0] = {...point};
+        lastDrawPoint = {...point};
+        strokeSettlingFrames--;
+        if (strokeSettlingFrames === 0) drawLiveDot(point, inkColor, eraserActive);
+        return;
+      }
       const movement = Math.hypot(point.x - lastDrawPoint.x, point.y - lastDrawPoint.y);
       if (movement > MIN_STROKE_SPACING_PX) {
         currentStroke.push({...point});
+        appendLiveStrokePoint(point);
         lastDrawPoint = {...point};
-        redraw();
       }
     }
-  } else {
-    // Keyboard + index finger mode - OPTIMIZED!
-    if (spacebarHeld) {
-      if (!drawing && isOverBoard(dashboardCursor)) {
-        // Start drawing
-        drawing = true;
-        currentStroke = [{x: point.x, y: point.y}];
-        lastDrawPoint = {x: point.x, y: point.y};
-        redraw();
-      } else if (drawing) {
-        // Continue drawing - optimized distance calculation
-        const dx = point.x - lastDrawPoint.x;
-        const dy = point.y - lastDrawPoint.y;
-        const movementSq = dx*dx + dy*dy; // Avoid sqrt for performance!
-        if (movementSq > MIN_STROKE_SPACING_PX * MIN_STROKE_SPACING_PX) {
-          currentStroke.push({x: point.x, y: point.y});
-          lastDrawPoint = {x: point.x, y: point.y};
-          redraw();
-        }
-      }
-    } else {
-      if (drawing) {
-        // Stop drawing
-        finishStroke();
+  } else if (drawKeyHeld) {
+    if (!drawing && isOverBoard(dashboardCursor)) {
+      drawing = true;
+      currentStroke = [{...point}];
+      lastDrawPoint = {...point};
+      lastKeyboardStrokeSampleAt = performance.now();
+      drawLiveDot(point, inkColor, eraserActive);
+    } else if (drawing && performance.now() - lastKeyboardStrokeSampleAt >= KEYBOARD_STROKE_SAMPLE_MS) {
+      const dx = point.x - lastDrawPoint.x;
+      const dy = point.y - lastDrawPoint.y;
+      if (dx * dx + dy * dy > MIN_STROKE_SPACING_PX * MIN_STROKE_SPACING_PX) {
+        currentStroke.push({...point});
+        appendLiveStrokePoint(point);
+        lastDrawPoint = {...point};
+        lastKeyboardStrokeSampleAt = performance.now();
       }
     }
   }
@@ -1044,11 +1408,17 @@ function drawResults(results){
   const landmarks = results.multiHandLandmarks || [];
   hudDist.textContent = '--';
   if (landmarks.length) {
-    landmarks.forEach(hand => {
-      drawConnectors(overlayCtx, hand, HAND_CONNECTIONS, {color:'#4CFF9E', lineWidth:2});
-      drawLandmarks(overlayCtx, hand, {color:'#EDE6D6', fillColor:'#4CFF9E', lineWidth:1.4, radius:3});
-    });
-    const hand = landmarks[0];
+    const hand = smoothLandmarks(landmarks[0]);
+    const previewHand = previewLandmarks(hand);
+    drawConnectors(overlayCtx, previewHand, HAND_CONNECTIONS, {color:'#4CFF9E', lineWidth:2});
+    drawLandmarks(overlayCtx, previewHand, {color:'#EDE6D6', fillColor:'#4CFF9E', lineWidth:1.4, radius:3});
+    handLostFrames = 0;
+    const indexNorm = {x: hand[8].x, y: hand[8].y};
+    if (lastFingertipNorm) {
+      const jump = Math.hypot(indexNorm.x - lastFingertipNorm.x, indexNorm.y - lastFingertipNorm.y);
+      trackingJitterScore = trackingJitterScore * 0.82 + jump * 0.18;
+    }
+    lastFingertipNorm = indexNorm;
     let rawPinchDistance = null;
     let pinchDistance = null;
     // Skip pinch distance calculations in keyboard mode for better performance
@@ -1073,10 +1443,11 @@ function drawResults(results){
     if (currentMode === 'thumb-index') {
       hint.textContent = isDrawing ? 'pinch held - drawing' : isSelecting ? 'pinch selected dashboard control' : 'pinch index finger and thumb to write or select';
     } else {
-      hint.textContent = isDrawing ? 'Enter held - drawing with index finger' : 'hold Enter and use index finger to write';
+      hint.textContent = isDrawing ? 'Space/Enter held - drawing with index finger' : 'hold Space or Enter and use index finger to write';
     }
     showGuidance(handGuidance(hand));
   } else {
+    handLostFrames++;
     if (performance.now() - lastHandSeenAt > HAND_LOSS_GRACE_MS) {
       finishStroke();
       filterX.reset();
@@ -1090,10 +1461,14 @@ function drawResults(results){
       strokeFrozen = false;
       smoothedPinchDistance = null;
       gestureTarget = null;
+      resetHandTrackingState();
       tip.style.opacity = '0';
     }
     setHoveredControl(null);
-    showGuidance('Place one hand inside the camera frame.');
+    const lostGuidance = handLostFrames > 3
+      ? 'Hold your hand closer to the camera and in front of your face.'
+      : 'Place one hand inside the camera frame.';
+    showGuidance(lostGuidance);
     setTrackingState(false, 'SEARCHING FOR HAND', 'SEARCHING');
   }
 }
@@ -1109,7 +1484,15 @@ async function startCamera(){
   cameraToggleBtn.textContent = 'Starting camera…';
   setTrackingState(false, 'REQUESTING CAMERA', 'WAITING');
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user', width:{ideal:1280}, height:{ideal:720}}, audio:false});
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video:{
+        facingMode:'user',
+        width:{ideal:640, max:960},
+        height:{ideal:480, max:720},
+        frameRate:{ideal:60, min:30}
+      },
+      audio:false
+    });
     if (session !== cameraSession) {
       stream.getTracks().forEach(track => track.stop());
       return;
@@ -1118,8 +1501,17 @@ async function startCamera(){
     await video.play();
     resizeOverlay();
     hands = new Hands({locateFile: file => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
-    hands.setOptions({maxNumHands:1, modelComplexity:1, minDetectionConfidence:0.70, minTrackingConfidence:0.75});
+    hands.setOptions({
+      maxNumHands: 1,
+      // The full model keeps partial/edge-positioned hands locked more
+      // reliably. Lower thresholds avoid dropping a hand during a quick
+      // transition near an edge of the usable gesture area.
+      modelComplexity: 1,
+      minDetectionConfidence: 0.50,
+      minTrackingConfidence: 0.50
+    });
     hands.onResults(drawResults);
+    resetHandTrackingState();
     cameraRunning = true;
     cameraEmpty.classList.add('hidden');
     cameraToggleBtn.disabled = false;
@@ -1129,8 +1521,15 @@ async function startCamera(){
       if (!cameraRunning || session !== cameraSession) return;
       if (lastFrameTime) hudFps.textContent = Math.round(1000 / (now - lastFrameTime));
       lastFrameTime = now;
-      await hands.send({image:video});
-      if (cameraRunning && session === cameraSession) requestAnimationFrame(detectFrame);
+      try {
+        await hands.send({image: prepareDetectionFrame()});
+      } catch (error) {
+        // Keep a transient MediaPipe frame error from permanently stopping
+        // the camera loop.
+        console.warn('Hand tracking frame skipped:', error);
+      } finally {
+        if (cameraRunning && session === cameraSession) requestAnimationFrame(detectFrame);
+      }
     }
     requestAnimationFrame(detectFrame);
   } catch (error) {
@@ -1146,6 +1545,7 @@ async function startCamera(){
 function stopCamera(){
   cameraSession++;
   cameraRunning = false;
+  drawKeyHeld = false;
   finishStroke();
   pinchFrames = 0;
   releaseFrames = 0;
@@ -1153,6 +1553,7 @@ function stopCamera(){
   strokeFrozen = false;
   smoothedPinchDistance = null;
   gestureTarget = null;
+  resetHandTrackingState();
   filterX.reset();
   filterY.reset();
   rawHistoryX = [];
@@ -1186,17 +1587,27 @@ cameraToggleBtn.addEventListener('click', () => {
 });
 window.addEventListener('resize', resizeOverlay);
 
-document.getElementById('saveBtn').addEventListener('click', ()=>{
-  const filmstrip = document.querySelector('.filmstrip');
+function saveCurrentNote(){
+  const notes = document.querySelector('.filmstrip-left');
+  const addCard = document.getElementById('addCard');
   const card = document.createElement('div');
   card.className = 'note-card';
-  const svgStrokes = strokes.map(s=>{
-    const d = s.pts.map((p,i)=> (i===0?'M':'L')+(p.x*0.3).toFixed(1)+','+(p.y*0.3).toFixed(1)).join(' ');
-    return `<path d="${d}" stroke="${s.color}" stroke-width="1.4" fill="none" stroke-linecap="round"/>`;
-  }).join('');
-  card.innerHTML = `<svg viewBox="0 0 110 78">${svgStrokes}</svg><div class="label">note ${filmstrip.children.length}</div>`;
-  filmstrip.insertBefore(card, document.getElementById('addCard'));
-});
+  const noteNumber = notes.querySelectorAll('.note-card:not(.empty)').length + 1;
+  const snapshotUrl = canvas.toDataURL('image/png');
+  card.dataset.snapshotUrl = snapshotUrl;
+  card.innerHTML = `<img src="${snapshotUrl}" alt="Saved note ${noteNumber}"><div class="label">note ${noteNumber}</div><button type="button" class="download-note" aria-label="Download note ${noteNumber} as PNG" title="Download PNG">⇩</button>`;
+  card.querySelector('.download-note').addEventListener('click', event => {
+    event.stopPropagation();
+    const link = document.createElement('a');
+    link.href = card.dataset.snapshotUrl;
+    link.download = `gesture-note-${noteNumber}.png`;
+    link.click();
+  });
+  notes.insertBefore(card, addCard);
+  showToast(`Saved note ${noteNumber}`);
+}
+
+document.getElementById('addCard').addEventListener('click', saveCurrentNote);
 
 resize();
 

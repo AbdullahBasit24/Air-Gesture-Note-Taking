@@ -1,35 +1,48 @@
-# Air Gesture Note-Taking
+# Gesture Draw — Air Gesture Note-Taking
 
-A webcam-based whiteboard that lets you write or draw in the air. Pinch your thumb and index finger together to put the pen down, move your hand to create raw ink, then separate them to lift the pen. No stylus, touchscreen, or mouse drawing is required.
+A webcam-based whiteboard where you draw in the air with your hand. Raw ink appears on the canvas exactly as you trace it — no mouse or touchscreen drawing required.
 
-> The project name is intentionally still a placeholder while the product is being developed.
+Built for the [Devpost OpenAI Build Week](https://openai.devpost.com/) hackathon. The product keeps **raw air-drawn ink** as the source of truth; a future GPT-5.6 "Clean up this note" action will interpret finished notes without replacing the original drawing.
 
 ## Why this exists
 
-This project is being built for the Devpost OpenAI Build Week hackathon. The core idea is to make quick visual note-taking accessible wherever a webcam is available: open a board, gesture in the air, and preserve exactly what was drawn.
-
-The product deliberately prioritizes raw ink over handwriting replacement. A future AI clean-up action will interpret the finished note without modifying the original drawing.
+Quick visual note-taking should work anywhere a webcam is available: open the board, gesture in the air, and keep what you drew. The interaction is intentionally physical — pinch to put the pen down, move your hand, release to lift — so the demo stays reliable under hackathon conditions.
 
 ## Current functionality
 
-- Browser webcam capture with single-hand tracking via MediaPipe Hands.
-- Live 21-landmark hand overlay in a small camera preview.
-- Gesture-only drawing: thumb–index pinch starts a stroke; releasing the pinch ends it.
-- Pinch distance is normalized by hand size, making the gesture less dependent on camera distance.
-- Separate start and release thresholds (hysteresis) reduce accidental pen flicker.
-- Three-frame confirmation for pen-down, so a near-pinch does not immediately start drawing.
-- 2D pinch measurement to better accommodate different hand angles.
-- Smoothed fingertip position and interpolated strokes to reduce camera jitter.
-- A protected camera-to-board mapping: the inner 74% of the webcam range reaches all board edges, so corners are accessible without leaving the camera frame.
-- Low-speed cursor damping and a pixel deadband for more controlled small lettering while preserving full-speed travel across the board.
-- Optional local Text mode using Tesseract.js; it only attempts handwriting-like, compact stroke groups and leaves likely sketches as raw ink.
-- Undo, clear, ink color selection, and local note-thumbnail previews.
-- Responsive light-mode interface that maximizes the available whiteboard area on laptop and smaller displays.
-- Live framing guidance when a hand is too close, too far, or near the camera-frame boundary.
+### Drawing modes
+
+| Mode | How to draw |
+| --- | --- |
+| **Thumb–index (default)** | Pinch thumb and index finger together to start a stroke; separate them to finish. Pinch over header controls to click buttons. |
+| **Keyboard index** | Click **Thumb-Index Mode** to switch. Hold **Space** or **Enter** and move your index fingertip over the board to draw; release the key to finish the stroke. |
+
+### Core features
+
+- Browser webcam capture with single-hand tracking via [MediaPipe Hands](https://developers.google.com/mediapipe/solutions/vision/hand_landmarker).
+- Live 21-landmark hand overlay in a compact camera preview (top-right).
+- Full-bleed responsive whiteboard canvas that fills the available viewport.
+- Pinch distance normalized by hand size, with separate pen-down / pen-up thresholds (hysteresis) to reduce flicker.
+- One Euro Filter + rolling average + adaptive cursor gain for smooth, responsive fingertip tracking.
+- Camera safe margin (inner 74% of the frame maps to the full board) so corners stay reachable without leaving the camera view.
+- Soft release threshold stops accepting new ink as fingers begin separating, reducing end-of-stroke hooks.
+- Incremental live ink rendering during strokes (full canvas rebuild only when a stroke finishes).
+- Adjustable stroke thickness (1–10 px), four preset ink colors plus a custom color wheel picker, eraser mode, undo, and clear.
+- Canvas zoom (50%–225%) via CSS transform — toolbar and camera stay fixed.
+- Save board snapshots as note thumbnails in the footer filmstrip.
+- On-screen framing guidance when a hand is too close, too far, near the camera edge, or when a busy background (e.g. your face) makes tracking jittery.
+- ROI hand tracking: once a hand is found, later frames crop to the hand region so background clutter interferes less.
+- Frame preprocessing (contrast/saturation boost) and temporal landmark smoothing for steadier tracking.
+- Mobile detection popup recommending desktop/laptop use; landscape mode supported on phones.
+
+### Not active in the current build
+
+- **Text mode / local OCR** — Tesseract.js is bundled but disabled (`textModeActive = false`). Handwriting is kept as raw ink.
+- **GPT-5.6 clean-up** — planned as a separate post-drawing action via a minimal backend endpoint (see below).
 
 ## Run locally
 
-The app is currently a dependency-free static frontend except for MediaPipe, which is loaded from a CDN.
+The app is a single static HTML file. MediaPipe and Tesseract load from CDNs on first visit.
 
 1. Open a terminal in this project folder.
 2. Start a local server:
@@ -39,65 +52,79 @@ The app is currently a dependency-free static frontend except for MediaPipe, whi
    ```
 
 3. Open [http://localhost:8000](http://localhost:8000).
-4. Click **Start camera** and allow webcam access.
-5. Keep one hand in view. Pinch thumb and index finger to draw; separate them to finish a stroke.
+4. Click **Start Camera** and allow webcam access.
+5. Keep one hand in view and draw using either mode above.
 
-Use a current Chromium-based browser for the most reliable webcam and MediaPipe behavior. Internet access is required on first load for the MediaPipe CDN scripts and model assets.
+**Requirements:** A current Chromium-based browser, a working webcam, and internet access on first load (CDN scripts + MediaPipe model assets).
 
-## Gesture tuning notes
+## Quick test guide (for judges)
 
-The current values are deliberately easy to tune from real camera testing:
+1. Load the hosted or local URL in Chrome or Edge.
+2. Grant camera permission when prompted.
+3. **Pinch mode:** Pinch thumb + index, move hand, release — ink should appear smoothly without freezing.
+4. **Keyboard mode:** Click **Thumb-Index Mode** in the header to switch, hold Space, move index finger, release Space.
+5. Try **Undo**, change color/thickness, toggle **Eraser**, and **Save to notes** to confirm toolbar controls work.
+6. Pinch over a header button (e.g. **Clear**) to verify pinch-to-click on controls.
 
-| Setting | Current value | Purpose |
+## Gesture tuning (current values)
+
+These are defined in `index.html` and tuned for live webcam testing:
+
+| Setting | Value | Purpose |
 | --- | ---: | --- |
-| Pen-down threshold | `0.22` | Requires a firm thumb–index pinch. |
-| Pen-up threshold | `0.27` | Ends the stroke shortly after the fingertips separate. |
-| Pen-down confirmation | 3 frames | Rejects a one-frame near-pinch. |
-| Position smoothing | `0.20` | Reduces jitter before points are written. |
+| Pen-down threshold | `0.24` | Normalized thumb–index distance to start a stroke. |
+| Pen-up threshold | `0.30` | Ends stroke after fingers separate. |
+| Soft release | `0.27` | Stops adding points as fingers begin opening. |
+| Pen-down confirmation | 1 frame | Fast pen-down after a firm pinch. |
+| Pen-up confirmation | 1 frame | Fast pen-up after release. |
+| Camera safe margin | `13%` | Inner frame maps to full board edges. |
+| Cursor deadband | `0.8 px` | Ignores sub-pixel jitter when nearly still. |
+| Min stroke spacing | `1.5 px` | Minimum distance between recorded points. |
 
 ## Planned GPT-5.6 integration
 
-GPT-5.6 is planned as a meaningful, separate “Clean up this note” workflow rather than part of the real-time drawing loop:
+GPT-5.6 will power a **"Clean up this note"** workflow, separate from the real-time drawing loop:
 
-1. The user finishes a note and chooses **Clean up this note**.
-2. The canvas image is sent to a minimal server endpoint, keeping the OpenAI API key off the client.
-3. GPT-5.6 receives the image and returns a handwritten-text transcription, a short title, and a one-line summary.
-4. The app displays that information alongside the unchanged original ink.
+1. User finishes a note and taps **Clean up this note**.
+2. The canvas image is sent to a minimal server endpoint (API key stays off the client).
+3. GPT-5.6 returns a handwritten-text transcription, a short title, and a one-line summary.
+4. Results display alongside the unchanged original ink.
 
-This separation protects the low-latency drawing experience and makes the AI contribution explicit in the demo. The UI currently includes a prototype clean-up panel; the API endpoint and live GPT-5.6 call remain upcoming work.
+This keeps the low-latency gesture experience independent from AI latency.
 
 ## How Codex collaboration shaped the project
 
-Codex has been used as the primary implementation partner for the core frontend so far. The work has been deliberately split into testable milestones rather than attempting the entire product in one change.
+Codex has been the primary implementation partner for the core frontend, split into testable milestones:
 
-- **Project framing:** Codex reviewed the hackathon brief and preserved the central product decision: raw air-drawn ink, not handwriting replacement.
-- **Tracking milestone:** Codex converted a visual-only frontend prototype into a real webcam + MediaPipe Hands experience, then the collaborator tested live hand detection in-browser.
-- **Gesture milestone:** Codex implemented normalized pinch detection, a distinct open/close hysteresis gap, and a short confirmation window. Thresholds were then tuned using real measured values reported during testing.
-- **Interaction decisions:** Based on testing feedback, Codex changed the pinch metric from 3D to 2D landmark distance for better tolerance of hand angle, corrected camera-crop coordinate mapping so the cursor can reach board edges, and added framing/distance guidance.
-- **Design iteration:** Codex changed the prototype to a light-mode responsive layout, made the canvas occupy the available viewport, and retained a small camera preview so the board stays the focus.
-- **Quality checks:** After each implementation pass, Codex ran a JavaScript syntax check. Browser webcam behavior was verified collaboratively through live testing because it cannot be fully reproduced in a headless static check.
+- **Project framing:** Preserved raw air-drawn ink as the core product decision.
+- **Tracking milestone:** Webcam + MediaPipe Hands with live landmark overlay.
+- **Gesture milestone:** Normalized pinch detection, hysteresis, and confirmation frames.
+- **Interaction refinement:** 2D pinch metric, object-fit crop correction, safe margin mapping, One Euro Filter smoothing.
+- **Design iteration:** Light-mode responsive layout, full-bleed board, compact camera preview.
+- **Drawing performance:** Incremental live segments during strokes to avoid full-canvas rebuilds every frame (fixes UI freeze in keyboard-index mode).
 
-The human collaborator made the key product calls: keeping the UI minimal, prioritizing a natural physical pinch, testing each behavior on real laptop hardware, and deciding that the project name should remain undecided for now. Codex accelerated the implementation, debugging, responsive layout work, and documentation.
+The human collaborator drives product calls: minimal UI, natural pinch feel, live hardware testing, and mode selection for different drawing preferences.
 
 ## Development log
 
-| Milestone | Change and context |
+| Milestone | Change |
 | --- | --- |
-| 1. Webcam tracking | Replaced simulated tracking and mouse-preview drawing with webcam permission, MediaPipe Hands, landmark connections, and tracking status. |
-| 2. Real air ink | Mapped the mirrored index fingertip to a canvas and used a thumb–index pinch as pen down/up. |
-| 3. Reliable pinch | Added hand-size normalization, hysteresis, and confirmation frames after early accidental drawing was observed in testing. |
-| 4. Edge mapping | Corrected for `object-fit: cover` crop in the video preview so visible camera edges map to whiteboard edges. |
-| 5. Visual refinement | Converted the interface to light mode, made the board viewport-responsive, and added a compact camera preview. |
-| 6. Jitter and guidance | Added position/stroke smoothing and on-screen guidance for hand framing and camera distance. |
-| 7. Current refinement | Enlarged the board inset and lowered the pen-up threshold to make release more immediate. Stroke thickness/appearance remains an intentional item for further tuning. |
-| 8. Precision and reachability | Added a safe camera margin mapped to the full board, adaptive low-speed cursor damping, and a deadband to reduce slow-motion jitter. Text mode now rejects obviously sketch-like groups before local OCR. |
-| 9. Stroke fidelity | Replaced post-stroke curve fitting with geometry-preserving line rendering, made pen-up use the unsmoothed pinch signal, and added a conservative straight-line assist for genuinely line-like strokes. |
-| 10. Stable live ink | Added distance-based point sampling and Ramer–Douglas–Peucker simplification to both active and completed strokes, removing micro-jitter without bending straight paths. |
+| 1. Webcam tracking | MediaPipe Hands, landmark overlay, tracking status HUD. |
+| 2. Real air ink | Index fingertip mapped to canvas; pinch = pen down/up. |
+| 3. Reliable pinch | Hand-size normalization, hysteresis, confirmation frames. |
+| 4. Edge mapping | Corrected for `object-fit: cover` crop in camera preview. |
+| 5. Visual refinement | Light mode, viewport-responsive board, compact preview. |
+| 6. Jitter and guidance | Smoothing filters and on-screen hand-framing hints. |
+| 7. Precision | Safe camera margin, adaptive cursor gain, deadband. |
+| 8. Stroke fidelity | Geometry-preserving rendering, soft release, straight-line assist. |
+| 9. Keyboard index mode | Hold Space/Enter + index finger as an alternative to pinch drawing. |
+| 10. Live ink performance | Incremental segment rendering during active strokes; full redraw only on stroke finish. |
+| 11. Tracking + color | ROI crop tracking, frame preprocessing, landmark smoothing for busy backgrounds; custom color wheel picker. |
+| 12. Color wheel reliability | Moved the picker into viewport-aware positioning, synchronized its marker/lightness with active ink, and prevented toolbar clipping. |
 
 ## Next steps
 
-1. Further tune pen-up responsiveness and stroke smoothing from live testing.
-2. Refine ink rendering so smoothing does not make handwriting appear wider or heavier.
-3. Add canvas export/cropping for the clean-up action.
-4. Create the minimal secure backend endpoint and integrate GPT-5.6 vision.
-5. Save notes persistently and show title/summary in a note gallery.
+1. Add canvas export for the GPT-5.6 clean-up action.
+2. Create a minimal secure backend endpoint and integrate GPT-5.6 vision.
+3. Persist saved notes (IndexedDB or similar) with title/summary in a gallery.
+4. Further tune pinch thresholds and stroke smoothing from live testing.
