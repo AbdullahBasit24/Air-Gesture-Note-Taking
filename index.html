@@ -106,6 +106,48 @@
   .btn.camera-toggle:hover{filter:brightness(1.1);}
   .gesture-hover{outline:3px solid rgba(20,125,82,.38);outline-offset:2px;transform:translateY(-1px);}
 
+  /* Tic-tac-toe dialog */
+  .game-modal{position:fixed;inset:0;z-index:10001;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(23,32,51,.58);backdrop-filter:blur(4px);}
+  .game-modal.open{display:flex;}
+  .game-dialog{width:min(92vw,390px);padding:24px;border-radius:14px;background:var(--panel);border:1px solid var(--hairline);box-shadow:0 20px 60px rgba(23,32,51,.3);text-align:center;}
+  .game-dialog-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:6px;text-align:left;}
+  .game-dialog h2{margin:0;font-family:'Space Grotesk',sans-serif;font-size:24px;}
+  .game-dialog p{margin:4px 0 18px;color:var(--text-mute);font-size:12px;}
+  .game-close{width:28px;min-height:28px;padding:0;font-size:18px;line-height:1;}
+  .game-status{min-height:22px;margin:0 0 12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--focus-green);}
+  .ttt-board{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:0 auto 18px;max-width:300px;}
+  .ttt-cell{aspect-ratio:1;width:100%;border:1px solid var(--hairline);border-radius:9px;background:var(--panel-2);color:var(--text);font-family:'Space Grotesk',sans-serif;font-size:clamp(32px,10vw,52px);font-weight:700;line-height:1;cursor:pointer;transition:background .15s,transform .15s;}
+  .ttt-cell:hover:not(:disabled){background:var(--focus-green-dim);transform:translateY(-1px);}
+  .ttt-cell:disabled{cursor:default;}
+  .ttt-cell.x{color:#1E4FB0;}
+  .ttt-cell.o{color:#B0271E;}
+  .game-actions{display:flex;justify-content:center;gap:8px;}
+  .table-tennis-dialog{width:min(94vw,500px);}
+  .table-tennis-court{display:block;width:100%;aspect-ratio:10/7;margin:0 auto 12px;border:1px solid var(--hairline);border-radius:10px;background:#E8F1EE;touch-action:none;}
+  .table-tennis-help{margin:0 0 12px!important;font-family:'JetBrains Mono',monospace;font-size:10px!important;line-height:1.45;}
+  .runner-dialog{width:min(94vw,500px);}
+  .runner-court{display:block;width:100%;aspect-ratio:10/7;margin:0 auto 12px;border:1px solid var(--hairline);border-radius:10px;background:#DDEFFC;}
+  .runner-help{margin:0 0 12px!important;font-family:'JetBrains Mono',monospace;font-size:10px!important;line-height:1.45;}
+  .runner-options{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 0 12px;}
+  .runner-options label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-mute);}
+  .runner-options select{min-height:28px;padding:4px 8px;border:1px solid var(--hairline);border-radius:6px;background:var(--panel-2);color:var(--text);font:500 11px 'Inter',sans-serif;cursor:pointer;}
+  .game-hub-dialog{width:min(94vw,620px);padding:26px;background:linear-gradient(145deg,#FFF9F1,#F2F8FF);}
+  .game-hub-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:18px 0;}
+  .game-hub-card{position:relative;min-height:154px;padding:16px;align-items:flex-start;justify-content:flex-end;flex-direction:column;white-space:normal;text-align:left;overflow:hidden;border:1px solid transparent;box-shadow:0 5px 12px rgba(30,41,59,.08);}
+  .game-hub-card::before{content:'';position:absolute;width:105px;height:105px;right:-28px;top:-28px;border-radius:50%;background:rgba(255,255,255,.45);}
+  .game-hub-card:hover{transform:translateY(-3px);box-shadow:0 9px 18px rgba(30,41,59,.15);}
+  .game-hub-card strong,.game-hub-card span,.game-hub-icon{position:relative;z-index:1;}
+  .game-hub-icon{position:absolute;top:14px;right:16px;font-size:34px;line-height:1;}
+  .game-hub-card strong{font-family:'Space Grotesk',sans-serif;font-size:17px;}
+  .game-hub-card em{position:relative;z-index:1;margin:3px 0 7px;font-size:10px;font-style:normal;color:var(--text-mute);line-height:1.4;}
+  .game-hub-card span{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-mute);line-height:1.45;}
+  .game-hub-card:hover span,.game-hub-card:hover em{color:inherit;}
+  .game-hub-card.tic{background:#E8F0FF;}.game-hub-card.ping{background:#E6F8EF;}.game-hub-card.runner{background:#FFF0DF;}.game-hub-card.fruit{background:#FCE9F0;}
+  .fruit-dialog{width:min(94vw,500px);}
+  .fruit-court{display:block;width:100%;aspect-ratio:10/7;margin:0 auto 12px;border:1px solid var(--hairline);border-radius:10px;background:#FDF3E7;}
+  .fruit-help{margin:0 0 12px!important;font-family:'JetBrains Mono',monospace;font-size:10px!important;line-height:1.45;}
+  @media (max-width:520px){.game-hub-grid{grid-template-columns:1fr;}.game-hub-card{min-height:108px;}}
+
   .thickness-group{display:flex;align-items:center;gap:6px;}
   .thickness-label{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-mute);white-space:nowrap;}
   #thicknessSlider{width:70px;accent-color:var(--text);cursor:pointer;}
@@ -138,7 +180,7 @@
   .tracking-guidance{position:absolute;bottom:16px;left:14px;z-index:3;max-width:260px;padding:7px 10px;border:1px solid #D0D5DD;border-radius:7px;background:#F2F4F7;color:#3A3F47;font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.4;opacity:0;transform:translateY(4px);transition:opacity .18s,transform .18s;pointer-events:none;}
   .tracking-guidance.show{opacity:1;transform:translateY(0);}
 
-  .fingertip{position:fixed;z-index:20;width:16px;height:16px;border-radius:50%;border:2px solid var(--focus-green);background:rgba(76,255,158,.15);pointer-events:none;transform:translate(-50%,-50%);transition:opacity .12s,background .12s;box-shadow:0 0 10px rgba(76,255,158,.5);}
+  .fingertip{position:fixed;z-index:10002;width:16px;height:16px;border-radius:50%;border:2px solid var(--focus-green);background:rgba(76,255,158,.15);pointer-events:none;transform:translate(-50%,-50%);transition:opacity .12s,background .12s;box-shadow:0 0 10px rgba(76,255,158,.5);}
 
   .hint{position:absolute;bottom:16px;right:14px;z-index:3;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-faint);background:rgba(255,255,255,.85);padding:3px 8px;border-radius:6px;}
 
@@ -314,6 +356,9 @@
       <div class="tool-group">
         <button class="btn toggle" id="modeSwitchBtn">Thumb-Index Mode</button>
       </div>
+      <div class="tool-group">
+        <button class="btn primary" id="gamesHubBtn">Games Hub</button>
+      </div>
     </div>
     <div class="status-pill" id="statusPill"><span id="statusText">SEARCHING FOR HAND</span></div>
   </header>
@@ -362,6 +407,92 @@
 
 </div>
 
+<div class="game-modal" id="gamesHubModal" role="dialog" aria-modal="true" aria-labelledby="gamesHubTitle" aria-hidden="true">
+  <div class="game-dialog game-hub-dialog">
+    <div class="game-dialog-header">
+      <div>
+        <h2 id="gamesHubTitle">Games Hub</h2>
+        <p>Your local game records are saved in this browser.</p>
+      </div>
+      <button type="button" class="btn ghost game-close" id="closeGamesHubBtn" aria-label="Close Games Hub">×</button>
+    </div>
+    <div class="game-hub-grid">
+      <button type="button" class="btn game-hub-card tic" id="hubTicTacToeBtn"><b class="game-hub-icon">⭕</b><strong>Tic-Tac-Toe</strong><em>Pinch an empty cell to play X.</em><span id="hubTicTacToeScore">Loading…</span></button>
+      <button type="button" class="btn game-hub-card ping" id="hubTableTennisBtn"><b class="game-hub-icon">🏓</b><strong>Table Tennis</strong><em>Guide your paddle with your hand.</em><span id="hubTableTennisScore">Loading…</span></button>
+      <button type="button" class="btn game-hub-card runner" id="hubRunnerBtn"><b class="game-hub-icon">🏃</b><strong>Endless Runner</strong><em>Change lane and pinch to jump.</em><span id="hubRunnerScore">Loading…</span></button>
+      <button type="button" class="btn game-hub-card fruit" id="hubFruitSliceBtn"><b class="game-hub-icon">🍉</b><strong>Fruit Slice</strong><em>Swipe your fingertip through fruit.</em><span id="hubFruitSliceScore">Loading…</span></button>
+    </div>
+    <div class="game-actions">
+      <button type="button" class="btn ghost" id="resetGameScoresBtn">Reset scores</button>
+      <button type="button" class="btn primary" id="closeGamesHubFooterBtn">Back to board</button>
+    </div>
+  </div>
+</div>
+
+<div class="game-modal" id="fruitSliceModal" role="dialog" aria-modal="true" aria-labelledby="fruitSliceTitle" aria-hidden="true">
+  <div class="game-dialog fruit-dialog">
+    <div class="game-dialog-header">
+      <div>
+        <h2 id="fruitSliceTitle">Fruit Slice</h2>
+        <p class="fruit-help">Slice fruit by sweeping your index finger through it. You have 30 seconds.</p>
+      </div>
+      <button type="button" class="btn ghost game-close" id="closeFruitSliceBtn" aria-label="Close Fruit Slice">×</button>
+    </div>
+    <div class="game-status" id="fruitSliceStatus" aria-live="polite">Slice as much fruit as you can</div>
+    <canvas class="fruit-court" id="fruitSliceCourt" width="600" height="420" aria-label="Fruit Slice game"></canvas>
+    <div class="game-actions">
+      <button type="button" class="btn primary" id="newFruitSliceGameBtn">New round</button>
+      <button type="button" class="btn ghost" id="fruitSoundBtn">Sound: On</button>
+      <button type="button" class="btn ghost" id="closeFruitSliceFooterBtn">Back to hub</button>
+    </div>
+  </div>
+</div>
+
+<div class="game-modal" id="runnerModal" role="dialog" aria-modal="true" aria-labelledby="runnerTitle" aria-hidden="true">
+  <div class="game-dialog runner-dialog">
+    <div class="game-dialog-header">
+      <div>
+        <h2 id="runnerTitle">Endless Runner</h2>
+        <p class="runner-help">Move your index finger left/right to choose a lane. Pinch to jump over obstacles.</p>
+      </div>
+      <button type="button" class="btn ghost game-close" id="closeRunnerBtn" aria-label="Close Endless Runner">×</button>
+    </div>
+    <div class="game-status" id="runnerStatus" aria-live="polite">Run as far as you can</div>
+    <div class="runner-options">
+      <label for="runnerDifficulty">Difficulty</label>
+      <select id="runnerDifficulty">
+        <option value="easy">Easy</option>
+        <option value="normal" selected>Normal</option>
+        <option value="hard">Hard</option>
+      </select>
+      <button type="button" class="btn ghost" id="pauseRunnerBtn">Pause</button>
+    </div>
+    <canvas class="runner-court" id="runnerCourt" width="600" height="420" aria-label="Endless Runner game"></canvas>
+    <div class="game-actions">
+      <button type="button" class="btn primary" id="newRunnerGameBtn">New run</button>
+      <button type="button" class="btn ghost" id="closeRunnerFooterBtn">Back to board</button>
+    </div>
+  </div>
+</div>
+
+<div class="game-modal" id="tableTennisModal" role="dialog" aria-modal="true" aria-labelledby="tableTennisTitle" aria-hidden="true">
+  <div class="game-dialog table-tennis-dialog">
+    <div class="game-dialog-header">
+      <div>
+        <h2 id="tableTennisTitle">Table Tennis</h2>
+        <p class="table-tennis-help">Move your index finger left and right to steer the blue paddle. First to 5 wins.</p>
+      </div>
+      <button type="button" class="btn ghost game-close" id="closeTableTennisBtn" aria-label="Close Table Tennis">×</button>
+    </div>
+    <div class="game-status" id="tableTennisStatus" aria-live="polite">Move your hand to control the paddle</div>
+    <canvas class="table-tennis-court" id="tableTennisCourt" width="600" height="420" aria-label="Table Tennis court"></canvas>
+    <div class="game-actions">
+      <button type="button" class="btn primary" id="newTableTennisGameBtn">New game</button>
+      <button type="button" class="btn ghost" id="closeTableTennisFooterBtn">Back to board</button>
+    </div>
+  </div>
+</div>
+
 <!-- Mobile Pop-up -->
 <div id="mobilePopup" class="mobile-popup">
   <div class="mobile-popup-content">
@@ -380,6 +511,24 @@
 </div>
 
 <div class="fingertip" id="fingertip" style="opacity:0;"></div>
+
+<div class="game-modal" id="ticTacToeModal" role="dialog" aria-modal="true" aria-labelledby="ticTacToeTitle" aria-hidden="true">
+  <div class="game-dialog">
+    <div class="game-dialog-header">
+      <div>
+        <h2 id="ticTacToeTitle">Tic-Tac-Toe</h2>
+        <p>You are X. Aim at an empty cell and pinch to play.</p>
+      </div>
+      <button type="button" class="btn ghost game-close" id="closeTicTacToeBtn" aria-label="Close Tic-Tac-Toe">×</button>
+    </div>
+    <div class="game-status" id="ticTacToeStatus" aria-live="polite">Your turn</div>
+    <div class="ttt-board" id="ticTacToeBoard" aria-label="Tic-Tac-Toe board"></div>
+    <div class="game-actions">
+      <button type="button" class="btn primary" id="newTicTacToeGameBtn">New game</button>
+      <button type="button" class="btn ghost" id="closeTicTacToeFooterBtn">Back to board</button>
+    </div>
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
@@ -767,6 +916,785 @@ document.getElementById('clearBtn').addEventListener('click', ()=>{
   redraw();
 });
 
+// ---- Local game records ----
+const GAME_SCORES_KEY = 'gesture-draw-game-scores-v1';
+function loadGameScores(){
+  try {
+    return {...{ticTacToeWins:0, ticTacToeGames:0, tableTennisWins:0, tableTennisBest:0, runnerBest:0, fruitSliceBest:0}, ...JSON.parse(localStorage.getItem(GAME_SCORES_KEY) || '{}')};
+  } catch {
+    return {ticTacToeWins:0, ticTacToeGames:0, tableTennisWins:0, tableTennisBest:0, runnerBest:0, fruitSliceBest:0};
+  }
+}
+let gameScores = loadGameScores();
+function saveGameScores(){
+  try { localStorage.setItem(GAME_SCORES_KEY, JSON.stringify(gameScores)); } catch { /* Private browsing can block storage. */ }
+  updateGamesHub();
+}
+
+// ---- Small, self-contained arcade sound theme (no external audio files) ----
+let gameAudioContext = null;
+let gameSoundEnabled = true;
+function getGameAudio(){
+  if (!gameSoundEnabled || !window.AudioContext && !window.webkitAudioContext) return null;
+  if (!gameAudioContext) gameAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+  if (gameAudioContext.state === 'suspended') gameAudioContext.resume();
+  return gameAudioContext;
+}
+function playGameTone(startFrequency, endFrequency, duration = .11, volume = .045, type = 'sine'){
+  const audio = getGameAudio();
+  if (!audio) return;
+  const now = audio.currentTime;
+  const oscillator = audio.createOscillator();
+  const gain = audio.createGain();
+  oscillator.type = type;
+  oscillator.frequency.setValueAtTime(startFrequency, now);
+  oscillator.frequency.exponentialRampToValueAtTime(Math.max(30, endFrequency), now + duration);
+  gain.gain.setValueAtTime(.0001, now);
+  gain.gain.exponentialRampToValueAtTime(volume, now + .012);
+  gain.gain.exponentialRampToValueAtTime(.0001, now + duration);
+  oscillator.connect(gain).connect(audio.destination);
+  oscillator.start(now);
+  oscillator.stop(now + duration + .02);
+}
+function playGameSound(kind, intensity = 1){
+  if (kind === 'slice') {
+    playGameTone(320 + intensity * 35, 760 + intensity * 55, .1, .05, 'triangle');
+    playGameTone(700 + intensity * 35, 1180 + intensity * 45, .07, .025, 'sine');
+  } else if (kind === 'bounce') playGameTone(230, 155, .07, .035, 'square');
+  else if (kind === 'jump') playGameTone(230, 520, .13, .04, 'triangle');
+  else if (kind === 'win') { playGameTone(440, 660, .15, .05); setTimeout(() => playGameTone(660, 990, .16, .05), 100); }
+  else if (kind === 'lose') playGameTone(270, 95, .25, .045, 'sawtooth');
+  else playGameTone(360, 520, .08, .035);
+}
+
+// ---- Tic-tac-toe: the player is X and the computer is O ----
+const ticTacToeBtn = document.getElementById('ticTacToeBtn');
+const ticTacToeModal = document.getElementById('ticTacToeModal');
+const ticTacToeBoard = document.getElementById('ticTacToeBoard');
+const ticTacToeStatus = document.getElementById('ticTacToeStatus');
+const closeTicTacToeBtn = document.getElementById('closeTicTacToeBtn');
+const closeTicTacToeFooterBtn = document.getElementById('closeTicTacToeFooterBtn');
+const newTicTacToeGameBtn = document.getElementById('newTicTacToeGameBtn');
+const TTT_WINS = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+let ticTacToeState = Array(9).fill('');
+let ticTacToeOver = false;
+let computerThinking = false;
+let computerMoveTimer = null;
+
+function ticTacToeWinner(board){
+  for (const [a, b, c] of TTT_WINS) {
+    if (board[a] && board[a] === board[b] && board[a] === board[c]) return board[a];
+  }
+  return board.every(Boolean) ? 'draw' : null;
+}
+
+function renderTicTacToe(){
+  ticTacToeBoard.replaceChildren();
+  ticTacToeState.forEach((mark, index) => {
+    const cell = document.createElement('button');
+    cell.type = 'button';
+    cell.className = `ttt-cell${mark ? ` ${mark.toLowerCase()}` : ''}`;
+    cell.textContent = mark;
+    cell.disabled = Boolean(mark) || ticTacToeOver || computerThinking;
+    cell.setAttribute('aria-label', mark ? `Cell ${index + 1}: ${mark}` : `Cell ${index + 1}: empty`);
+    cell.addEventListener('click', () => playTicTacToeMove(index));
+    ticTacToeBoard.append(cell);
+  });
+}
+
+function announceTicTacToeResult(result){
+  gameScores.ticTacToeGames++;
+  if (result === 'X') gameScores.ticTacToeWins++;
+  saveGameScores();
+  if (result === 'X') ticTacToeStatus.textContent = 'You win! Nice move.';
+  else if (result === 'O') ticTacToeStatus.textContent = 'Computer wins this round.';
+  else ticTacToeStatus.textContent = "It's a draw.";
+  if (result === 'X') playGameSound('win');
+  else if (result === 'O') playGameSound('lose');
+}
+
+function scoreTicTacToe(board, maximizing){
+  const result = ticTacToeWinner(board);
+  if (result === 'O') return 10;
+  if (result === 'X') return -10;
+  if (result === 'draw') return 0;
+  const scores = [];
+  board.forEach((mark, index) => {
+    if (mark) return;
+    const next = [...board];
+    next[index] = maximizing ? 'O' : 'X';
+    scores.push(scoreTicTacToe(next, !maximizing));
+  });
+  return maximizing ? Math.max(...scores) : Math.min(...scores);
+}
+
+function chooseComputerMove(){
+  let bestScore = -Infinity;
+  let choices = [];
+  ticTacToeState.forEach((mark, index) => {
+    if (mark) return;
+    const candidate = [...ticTacToeState];
+    candidate[index] = 'O';
+    const score = scoreTicTacToe(candidate, false);
+    if (score > bestScore) {
+      bestScore = score;
+      choices = [index];
+    } else if (score === bestScore) {
+      choices.push(index);
+    }
+  });
+  return choices[Math.floor(Math.random() * choices.length)];
+}
+
+function playTicTacToeMove(index){
+  if (computerThinking || ticTacToeOver || ticTacToeState[index]) return;
+  ticTacToeState[index] = 'X';
+  playGameSound('select');
+  const result = ticTacToeWinner(ticTacToeState);
+  if (result) {
+    ticTacToeOver = true;
+    announceTicTacToeResult(result);
+    renderTicTacToe();
+    return;
+  }
+  computerThinking = true;
+  ticTacToeStatus.textContent = 'Computer is thinking…';
+  renderTicTacToe();
+  computerMoveTimer = setTimeout(() => {
+    computerThinking = false;
+    ticTacToeState[chooseComputerMove()] = 'O';
+    playGameTone(260, 340, .08, .03, 'triangle');
+    const computerResult = ticTacToeWinner(ticTacToeState);
+    if (computerResult) {
+      ticTacToeOver = true;
+      announceTicTacToeResult(computerResult);
+    } else {
+      ticTacToeStatus.textContent = 'Your turn';
+    }
+    renderTicTacToe();
+  }, 350);
+}
+
+function newTicTacToeGame(){
+  clearTimeout(computerMoveTimer);
+  ticTacToeState = Array(9).fill('');
+  ticTacToeOver = false;
+  computerThinking = false;
+  ticTacToeStatus.textContent = 'Your turn';
+  renderTicTacToe();
+}
+
+function setTicTacToeOpen(open){
+  if (!open && drawing) finishStroke();
+  ticTacToeModal.classList.toggle('open', open);
+  ticTacToeModal.setAttribute('aria-hidden', String(!open));
+  if (open) {
+    getGameAudio();
+    newTicTacToeGame();
+    closeTicTacToeBtn.focus();
+  } else {
+    ticTacToeBtn?.focus();
+  }
+}
+
+ticTacToeBtn?.addEventListener('click', () => setTicTacToeOpen(true));
+closeTicTacToeBtn.addEventListener('click', () => setTicTacToeOpen(false));
+closeTicTacToeFooterBtn.addEventListener('click', () => setTicTacToeOpen(false));
+newTicTacToeGameBtn.addEventListener('click', newTicTacToeGame);
+ticTacToeModal.addEventListener('click', event => {
+  if (event.target === ticTacToeModal) setTicTacToeOpen(false);
+});
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && ticTacToeModal.classList.contains('open')) setTicTacToeOpen(false);
+  if (event.key === 'Escape' && tableTennisModal.classList.contains('open')) setTableTennisOpen(false);
+  if (event.key === 'Escape' && runnerModal.classList.contains('open')) setRunnerOpen(false);
+  if (event.key === 'Escape' && fruitSliceModal.classList.contains('open')) setFruitSliceOpen(false);
+  if (event.key === 'Escape' && gamesHubModal.classList.contains('open')) setGamesHubOpen(false);
+});
+
+// ---- Table tennis: guide the blue paddle with your fingertip ----
+const tableTennisBtn = document.getElementById('tableTennisBtn');
+const tableTennisModal = document.getElementById('tableTennisModal');
+const tableTennisCourt = document.getElementById('tableTennisCourt');
+const tableTennisCtx = tableTennisCourt.getContext('2d');
+const tableTennisStatus = document.getElementById('tableTennisStatus');
+const closeTableTennisBtn = document.getElementById('closeTableTennisBtn');
+const closeTableTennisFooterBtn = document.getElementById('closeTableTennisFooterBtn');
+const newTableTennisGameBtn = document.getElementById('newTableTennisGameBtn');
+const TT_WIDTH = tableTennisCourt.width, TT_HEIGHT = tableTennisCourt.height;
+const TT_PADDLE_WIDTH = 118, TT_PADDLE_HEIGHT = 12, TT_BALL_RADIUS = 8, TT_WIN_SCORE = 5;
+let tableTennis = null;
+let tableTennisFrameId = null;
+let tableTennisLastFrame = 0;
+
+function resetTableTennisBall(towardPlayer = true){
+  tableTennis.ball = {
+    x:TT_WIDTH / 2,
+    y:TT_HEIGHT / 2,
+    vx:(Math.random() > .5 ? 1 : -1) * 135,
+    vy:towardPlayer ? 205 : -205
+  };
+}
+
+function newTableTennisGame(){
+  tableTennis = {
+    playerX:TT_WIDTH / 2,
+    computerX:TT_WIDTH / 2,
+    playerScore:0,
+    computerScore:0,
+    running:true,
+    finished:false,
+    ball:null
+  };
+  resetTableTennisBall(true);
+  tableTennisStatus.textContent = 'Rally started — guide the blue paddle with your hand';
+  tableTennisLastFrame = performance.now();
+  cancelAnimationFrame(tableTennisFrameId);
+  tableTennisFrameId = requestAnimationFrame(runTableTennis);
+  drawTableTennis();
+}
+
+function clampTableTennisPaddle(x){
+  return Math.max(TT_PADDLE_WIDTH / 2, Math.min(TT_WIDTH - TT_PADDLE_WIDTH / 2, x));
+}
+
+function updateTableTennisPaddle(cursor){
+  if (!tableTennis?.running) return;
+  const courtRect = tableTennisCourt.getBoundingClientRect();
+  const normalizedX = (cursor.x - courtRect.left) / courtRect.width;
+  tableTennis.playerX = clampTableTennisPaddle(normalizedX * TT_WIDTH);
+}
+
+function scoreTableTennis(playerScored){
+  if (playerScored) tableTennis.playerScore++;
+  else tableTennis.computerScore++;
+  if (tableTennis.playerScore >= TT_WIN_SCORE || tableTennis.computerScore >= TT_WIN_SCORE) {
+    tableTennis.running = false;
+    tableTennis.finished = true;
+    gameScores.tableTennisBest = Math.max(gameScores.tableTennisBest, tableTennis.playerScore);
+    if (tableTennis.playerScore >= TT_WIN_SCORE) gameScores.tableTennisWins++;
+    saveGameScores();
+    tableTennisStatus.textContent = tableTennis.playerScore >= TT_WIN_SCORE ? 'You win the match!' : 'Computer wins the match.';
+    return;
+  }
+  tableTennisStatus.textContent = playerScored ? 'Point to you!' : 'Point to the computer.';
+  resetTableTennisBall(!playerScored);
+}
+
+function runTableTennis(now){
+  if (!tableTennis?.running || !tableTennisModal.classList.contains('open')) return;
+  const dt = Math.min(.035, (now - tableTennisLastFrame) / 1000 || 0);
+  tableTennisLastFrame = now;
+  const ball = tableTennis.ball;
+  const computerTarget = ball.vy < 0 ? ball.x : TT_WIDTH / 2;
+  tableTennis.computerX += Math.max(-190 * dt, Math.min(190 * dt, computerTarget - tableTennis.computerX));
+  tableTennis.computerX = clampTableTennisPaddle(tableTennis.computerX);
+  ball.x += ball.vx * dt;
+  ball.y += ball.vy * dt;
+
+  if (ball.x - TT_BALL_RADIUS <= 0 || ball.x + TT_BALL_RADIUS >= TT_WIDTH) {
+    ball.vx *= -1;
+    ball.x = Math.max(TT_BALL_RADIUS, Math.min(TT_WIDTH - TT_BALL_RADIUS, ball.x));
+  }
+
+  const playerY = TT_HEIGHT - 30;
+  const computerY = 18;
+  const playerHit = ball.vy > 0 && ball.y + TT_BALL_RADIUS >= playerY && ball.y - TT_BALL_RADIUS <= playerY + TT_PADDLE_HEIGHT && Math.abs(ball.x - tableTennis.playerX) <= TT_PADDLE_WIDTH / 2;
+  const computerHit = ball.vy < 0 && ball.y - TT_BALL_RADIUS <= computerY + TT_PADDLE_HEIGHT && ball.y + TT_BALL_RADIUS >= computerY && Math.abs(ball.x - tableTennis.computerX) <= TT_PADDLE_WIDTH / 2;
+  if (playerHit || computerHit) {
+    const paddleX = playerHit ? tableTennis.playerX : tableTennis.computerX;
+    const direction = playerHit ? -1 : 1;
+    ball.vy = direction * Math.min(370, Math.abs(ball.vy) * 1.045);
+    ball.vx = Math.max(-300, Math.min(300, ball.vx + ((ball.x - paddleX) / (TT_PADDLE_WIDTH / 2)) * 72));
+    ball.y = playerHit ? playerY - TT_BALL_RADIUS : computerY + TT_PADDLE_HEIGHT + TT_BALL_RADIUS;
+    playGameSound('bounce');
+  }
+  if (ball.y > TT_HEIGHT + TT_BALL_RADIUS) scoreTableTennis(false);
+  else if (ball.y < -TT_BALL_RADIUS) scoreTableTennis(true);
+  drawTableTennis();
+  if (tableTennis.running) tableTennisFrameId = requestAnimationFrame(runTableTennis);
+}
+
+function drawTableTennis(){
+  if (!tableTennis) return;
+  const ctx = tableTennisCtx;
+  ctx.clearRect(0, 0, TT_WIDTH, TT_HEIGHT);
+  ctx.fillStyle = '#E8F1EE';
+  ctx.fillRect(0, 0, TT_WIDTH, TT_HEIGHT);
+  ctx.setLineDash([10, 10]);
+  ctx.strokeStyle = '#AAB9B1';
+  ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(TT_WIDTH / 2, 0); ctx.lineTo(TT_WIDTH / 2, TT_HEIGHT); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#B0271E';
+  ctx.fillRect(tableTennis.computerX - TT_PADDLE_WIDTH / 2, 18, TT_PADDLE_WIDTH, TT_PADDLE_HEIGHT);
+  ctx.fillStyle = '#1E4FB0';
+  ctx.fillRect(tableTennis.playerX - TT_PADDLE_WIDTH / 2, TT_HEIGHT - 30, TT_PADDLE_WIDTH, TT_PADDLE_HEIGHT);
+  ctx.fillStyle = '#172033';
+  ctx.beginPath(); ctx.arc(tableTennis.ball.x, tableTennis.ball.y, TT_BALL_RADIUS, 0, Math.PI * 2); ctx.fill();
+  ctx.font = '600 22px "Space Grotesk", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(`COMPUTER ${tableTennis.computerScore}  —  ${tableTennis.playerScore} YOU`, TT_WIDTH / 2, TT_HEIGHT / 2 + 8);
+}
+
+function setTableTennisOpen(open){
+  if (!open && drawing) finishStroke();
+  tableTennisModal.classList.toggle('open', open);
+  tableTennisModal.setAttribute('aria-hidden', String(!open));
+  if (open) {
+    getGameAudio();
+    newTableTennisGame();
+    closeTableTennisBtn.focus();
+  } else {
+    cancelAnimationFrame(tableTennisFrameId);
+    if (tableTennis) tableTennis.running = false;
+    tableTennisBtn?.focus();
+  }
+}
+
+tableTennisBtn?.addEventListener('click', () => setTableTennisOpen(true));
+closeTableTennisBtn.addEventListener('click', () => setTableTennisOpen(false));
+closeTableTennisFooterBtn.addEventListener('click', () => setTableTennisOpen(false));
+newTableTennisGameBtn.addEventListener('click', newTableTennisGame);
+tableTennisModal.addEventListener('click', event => {
+  if (event.target === tableTennisModal) setTableTennisOpen(false);
+});
+
+// ---- Endless runner: choose a lane with your fingertip and pinch to jump ----
+const runnerBtn = document.getElementById('runnerBtn');
+const runnerModal = document.getElementById('runnerModal');
+const runnerCourt = document.getElementById('runnerCourt');
+const runnerCtx = runnerCourt.getContext('2d');
+const runnerStatus = document.getElementById('runnerStatus');
+const closeRunnerBtn = document.getElementById('closeRunnerBtn');
+const closeRunnerFooterBtn = document.getElementById('closeRunnerFooterBtn');
+const newRunnerGameBtn = document.getElementById('newRunnerGameBtn');
+const runnerDifficulty = document.getElementById('runnerDifficulty');
+const pauseRunnerBtn = document.getElementById('pauseRunnerBtn');
+const RUNNER_WIDTH = runnerCourt.width, RUNNER_HEIGHT = runnerCourt.height;
+const RUNNER_LANES = [RUNNER_WIDTH * .22, RUNNER_WIDTH * .5, RUNNER_WIDTH * .78];
+const RUNNER_GROUND_Y = 352, RUNNER_PLAYER_SIZE = 40;
+const RUNNER_DIFFICULTIES = {
+  easy:{speed:.78, spawn:1.18, label:'Easy'},
+  normal:{speed:1, spawn:1, label:'Normal'},
+  hard:{speed:1.24, spawn:.78, label:'Hard'}
+};
+let runner = null;
+let runnerFrameId = null;
+let runnerLastFrame = 0;
+let runnerBestScore = gameScores.runnerBest;
+
+function newRunnerGame(){
+  const difficulty = RUNNER_DIFFICULTIES[runnerDifficulty.value];
+  runner = {
+    lane:1,
+    playerY:RUNNER_GROUND_Y,
+    jumpVelocity:0,
+    obstacles:[],
+    spawnAfter:.85,
+    distance:0,
+    running:true,
+    finished:false,
+    paused:false,
+    difficulty
+  };
+  pauseRunnerBtn.textContent = 'Pause';
+  runnerStatus.textContent = `${difficulty.label} run — pinch to jump`;
+  runnerLastFrame = performance.now();
+  cancelAnimationFrame(runnerFrameId);
+  runnerFrameId = requestAnimationFrame(runEndlessRunner);
+  drawEndlessRunner();
+}
+
+function updateRunnerLane(cursor){
+  if (!runner?.running) return;
+  const rect = runnerCourt.getBoundingClientRect();
+  // Make the outer lanes easy to reach without needing to hold a hand at the
+  // extreme edge of the camera frame.
+  const normalizedX = Math.max(0, Math.min(.999, (cursor.x - rect.left) / rect.width));
+  runner.lane = Math.floor(normalizedX * 3);
+}
+
+function requestRunnerJump(){
+  if (!runner?.running || runner.playerY < RUNNER_GROUND_Y - 1) return;
+  runner.jumpVelocity = -520;
+  playGameSound('jump');
+}
+
+function endRunnerGame(){
+  runner.running = false;
+  runner.finished = true;
+  const score = Math.floor(runner.distance);
+  runnerBestScore = Math.max(runnerBestScore, score);
+  gameScores.runnerBest = runnerBestScore;
+  saveGameScores();
+  runnerStatus.textContent = `Run over — score: ${score}. Best: ${runnerBestScore}`;
+  playGameSound('lose');
+}
+
+function toggleRunnerPause(){
+  if (!runner?.running) return;
+  runner.paused = !runner.paused;
+  pauseRunnerBtn.textContent = runner.paused ? 'Resume' : 'Pause';
+  runnerStatus.textContent = runner.paused ? 'Paused' : `${runner.difficulty.label} run — pinch to jump`;
+  if (!runner.paused) {
+    runnerLastFrame = performance.now();
+    runnerFrameId = requestAnimationFrame(runEndlessRunner);
+  }
+  drawEndlessRunner();
+}
+
+function runEndlessRunner(now){
+  if (!runner?.running || runner.paused || !runnerModal.classList.contains('open')) return;
+  const dt = Math.min(.035, (now - runnerLastFrame) / 1000 || 0);
+  runnerLastFrame = now;
+  runner.distance += dt * 10;
+  const speed = (235 + Math.min(190, runner.distance * 2.6)) * runner.difficulty.speed;
+  runner.jumpVelocity += 1320 * dt;
+  runner.playerY = Math.min(RUNNER_GROUND_Y, runner.playerY + runner.jumpVelocity * dt);
+  if (runner.playerY === RUNNER_GROUND_Y) runner.jumpVelocity = 0;
+  runner.spawnAfter -= dt;
+  if (runner.spawnAfter <= 0) {
+    runner.obstacles.push({lane:Math.floor(Math.random() * 3), y:-58, size:48});
+    runner.spawnAfter = (Math.max(.52, .98 - runner.distance * .008) + Math.random() * .32) * runner.difficulty.spawn;
+  }
+  runner.obstacles.forEach(obstacle => obstacle.y += speed * dt);
+  runner.obstacles = runner.obstacles.filter(obstacle => obstacle.y < RUNNER_HEIGHT + obstacle.size);
+  const playerX = RUNNER_LANES[runner.lane] - RUNNER_PLAYER_SIZE / 2;
+  for (const obstacle of runner.obstacles) {
+    const obstacleX = RUNNER_LANES[obstacle.lane] - obstacle.size / 2;
+    const overlapX = playerX < obstacleX + obstacle.size && playerX + RUNNER_PLAYER_SIZE > obstacleX;
+    const overlapY = runner.playerY < obstacle.y + obstacle.size && runner.playerY + RUNNER_PLAYER_SIZE > obstacle.y;
+    if (overlapX && overlapY) {
+      endRunnerGame();
+      break;
+    }
+  }
+  drawEndlessRunner();
+  if (runner.running) runnerFrameId = requestAnimationFrame(runEndlessRunner);
+}
+
+function drawEndlessRunner(){
+  if (!runner) return;
+  const ctx = runnerCtx;
+  ctx.clearRect(0, 0, RUNNER_WIDTH, RUNNER_HEIGHT);
+  const sky = ctx.createLinearGradient(0, 0, 0, RUNNER_HEIGHT);
+  sky.addColorStop(0, '#A8DCEF'); sky.addColorStop(.53, '#E9F5EA'); sky.addColorStop(.54, '#718096'); sky.addColorStop(1, '#2E3A49');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, RUNNER_WIDTH, RUNNER_HEIGHT);
+  ctx.fillStyle = 'rgba(255,255,255,.62)';
+  for (let i = 0; i < 5; i++) ctx.fillRect((i * 137 + 24) % RUNNER_WIDTH, 66 + (i % 2) * 34, 70, 10);
+  ctx.fillStyle = '#7A93A3';
+  for (let i = 0; i < 8; i++) {
+    const x = i * 88 - 16, height = 36 + (i % 3) * 22;
+    ctx.fillRect(x, RUNNER_HEIGHT * .54 - height, 58, height);
+  }
+  ctx.strokeStyle = 'rgba(255,255,255,.55)';
+  ctx.lineWidth = 4;
+  for (let lane = 1; lane < 3; lane++) {
+    ctx.beginPath(); ctx.moveTo(RUNNER_WIDTH * lane / 3, RUNNER_HEIGHT); ctx.lineTo(RUNNER_WIDTH * lane / 3, RUNNER_HEIGHT * .57); ctx.stroke();
+  }
+  runner.obstacles.forEach(obstacle => {
+    const x = RUNNER_LANES[obstacle.lane] - obstacle.size / 2;
+    ctx.fillStyle = 'rgba(23,32,51,.22)';
+    ctx.fillRect(x + 5, obstacle.y + obstacle.size + 4, obstacle.size - 10, 6);
+    ctx.fillStyle = '#B0271E';
+    ctx.fillRect(x, obstacle.y, obstacle.size, obstacle.size);
+    ctx.fillStyle = '#FFF';
+    ctx.fillRect(x + 10, obstacle.y + 10, obstacle.size - 20, 7);
+  });
+  const playerX = RUNNER_LANES[runner.lane] - RUNNER_PLAYER_SIZE / 2;
+  ctx.fillStyle = 'rgba(23,32,51,.24)';
+  ctx.fillRect(playerX + 5, RUNNER_GROUND_Y + RUNNER_PLAYER_SIZE + 4, RUNNER_PLAYER_SIZE - 10, 6);
+  ctx.fillStyle = '#1E4FB0';
+  ctx.fillRect(playerX, runner.playerY, RUNNER_PLAYER_SIZE, RUNNER_PLAYER_SIZE);
+  ctx.fillStyle = '#FFF';
+  ctx.fillRect(playerX + 9, runner.playerY + 9, 8, 8);
+  ctx.fillRect(playerX + 24, runner.playerY + 9, 8, 8);
+  ctx.font = '600 20px "Space Grotesk", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#172033';
+  ctx.fillText(`SCORE ${Math.floor(runner.distance)}   BEST ${runnerBestScore}`, RUNNER_WIDTH / 2, 34);
+  if (runner.paused) {
+    ctx.fillStyle = 'rgba(23,32,51,.62)'; ctx.fillRect(0, 0, RUNNER_WIDTH, RUNNER_HEIGHT);
+    ctx.fillStyle = '#FFF'; ctx.font = '700 34px "Space Grotesk", sans-serif';
+    ctx.fillText('PAUSED', RUNNER_WIDTH / 2, RUNNER_HEIGHT / 2);
+  }
+  if (runner.finished) {
+    ctx.fillStyle = 'rgba(23,32,51,.72)'; ctx.fillRect(0, 0, RUNNER_WIDTH, RUNNER_HEIGHT);
+    ctx.fillStyle = '#FFF'; ctx.font = '700 34px "Space Grotesk", sans-serif';
+    ctx.fillText('RUN OVER', RUNNER_WIDTH / 2, RUNNER_HEIGHT / 2);
+  }
+}
+
+function setRunnerOpen(open){
+  if (!open && drawing) finishStroke();
+  runnerModal.classList.toggle('open', open);
+  runnerModal.setAttribute('aria-hidden', String(!open));
+  if (open) {
+    getGameAudio();
+    newRunnerGame();
+    closeRunnerBtn.focus();
+  } else {
+    cancelAnimationFrame(runnerFrameId);
+    if (runner) runner.running = false;
+    runnerBtn?.focus();
+  }
+}
+
+runnerBtn?.addEventListener('click', () => setRunnerOpen(true));
+closeRunnerBtn.addEventListener('click', () => setRunnerOpen(false));
+closeRunnerFooterBtn.addEventListener('click', () => setRunnerOpen(false));
+newRunnerGameBtn.addEventListener('click', newRunnerGame);
+pauseRunnerBtn.addEventListener('click', toggleRunnerPause);
+runnerDifficulty.addEventListener('change', newRunnerGame);
+runnerModal.addEventListener('click', event => {
+  if (event.target === runnerModal) setRunnerOpen(false);
+});
+
+// ---- Fruit Slice: sweep your fingertip through fruit before time runs out ----
+const fruitSliceModal = document.getElementById('fruitSliceModal');
+const fruitSliceCourt = document.getElementById('fruitSliceCourt');
+const fruitSliceCtx = fruitSliceCourt.getContext('2d');
+const fruitSliceStatus = document.getElementById('fruitSliceStatus');
+const closeFruitSliceBtn = document.getElementById('closeFruitSliceBtn');
+const closeFruitSliceFooterBtn = document.getElementById('closeFruitSliceFooterBtn');
+const newFruitSliceGameBtn = document.getElementById('newFruitSliceGameBtn');
+const fruitSoundBtn = document.getElementById('fruitSoundBtn');
+const FRUIT_WIDTH = fruitSliceCourt.width, FRUIT_HEIGHT = fruitSliceCourt.height;
+const FRUIT_COLORS = ['#EF5A5A','#F39C3D','#F4CE4E','#66B87A','#8B6AD9','#EC78A8'];
+let fruitGame = null;
+let fruitFrameId = null;
+let fruitLastFrame = 0;
+
+function newFruitSliceGame(){
+  fruitGame = {fruits:[], particles:[], score:0, seconds:30, spawnIn:.25, running:true, lastPointer:null, combo:0, comboUntil:0};
+  fruitSliceStatus.textContent = '30 seconds — sweep your fingertip through the fruit';
+  fruitLastFrame = performance.now();
+  cancelAnimationFrame(fruitFrameId);
+  fruitFrameId = requestAnimationFrame(runFruitSlice);
+  drawFruitSlice();
+}
+
+function spawnFruit(){
+  const fromLeft = Math.random() > .5;
+  const launchX = fromLeft ? 35 + Math.random() * 95 : FRUIT_WIDTH - 35 - Math.random() * 95;
+  fruitGame.fruits.push({
+    x:launchX,
+    y:FRUIT_HEIGHT + 28,
+    vx:(fromLeft ? 85 : -85) + (-90 + Math.random() * 180),
+    vy:-440 - Math.random() * 205,
+    r:20 + Math.random() * 8,
+    color:FRUIT_COLORS[Math.floor(Math.random() * FRUIT_COLORS.length)],
+    sliced:false,
+    sliceAge:0,
+    angle:Math.random() * Math.PI * 2,
+    rotation:-4 + Math.random() * 8
+  });
+}
+
+function burstFruitParticles(fruit){
+  for (let i = 0; i < 13; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 65 + Math.random() * 165;
+    fruitGame.particles.push({x:fruit.x, y:fruit.y, vx:Math.cos(angle) * speed, vy:Math.sin(angle) * speed - 45, life:.45 + Math.random() * .28, color:fruit.color, size:2 + Math.random() * 4});
+  }
+}
+
+function pointToSegmentDistance(px, py, ax, ay, bx, by){
+  const dx = bx - ax, dy = by - ay;
+  const lengthSq = dx * dx + dy * dy;
+  if (!lengthSq) return Math.hypot(px - ax, py - ay);
+  const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / lengthSq));
+  return Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
+}
+
+function updateFruitSlice(cursor){
+  if (!fruitGame?.running) return;
+  const rect = fruitSliceCourt.getBoundingClientRect();
+  const pointer = {x:(cursor.x - rect.left) / rect.width * FRUIT_WIDTH, y:(cursor.y - rect.top) / rect.height * FRUIT_HEIGHT};
+  if (pointer.x < 0 || pointer.x > FRUIT_WIDTH || pointer.y < 0 || pointer.y > FRUIT_HEIGHT) {
+    fruitGame.lastPointer = null;
+    return;
+  }
+  if (fruitGame.lastPointer) {
+    fruitGame.fruits.forEach(fruit => {
+      if (!fruit.sliced && pointToSegmentDistance(fruit.x, fruit.y, fruitGame.lastPointer.x, fruitGame.lastPointer.y, pointer.x, pointer.y) <= fruit.r + 5) {
+        fruit.sliced = true;
+        fruit.sliceAge = 0;
+        fruitGame.combo = performance.now() < fruitGame.comboUntil ? fruitGame.combo + 1 : 1;
+        fruitGame.comboUntil = performance.now() + 850;
+        const multiplier = Math.min(5, 1 + Math.floor((fruitGame.combo - 1) / 3));
+        fruitGame.score += multiplier;
+        burstFruitParticles(fruit);
+        playGameSound('slice', multiplier);
+        fruitSliceStatus.textContent = multiplier > 1 ? `${fruitGame.combo} fruit combo · x${multiplier} points!` : `${fruitGame.score} points — keep slicing!`;
+      }
+    });
+  }
+  fruitGame.lastPointer = pointer;
+}
+
+function finishFruitSlice(){
+  fruitGame.running = false;
+  gameScores.fruitSliceBest = Math.max(gameScores.fruitSliceBest, fruitGame.score);
+  saveGameScores();
+  fruitSliceStatus.textContent = `Time! You sliced ${fruitGame.score}. Best: ${gameScores.fruitSliceBest}`;
+  playGameSound(fruitGame.score >= 15 ? 'win' : 'lose');
+}
+
+function runFruitSlice(now){
+  if (!fruitGame?.running || !fruitSliceModal.classList.contains('open')) return;
+  const dt = Math.min(.035, (now - fruitLastFrame) / 1000 || 0);
+  fruitLastFrame = now;
+  fruitGame.seconds = Math.max(0, fruitGame.seconds - dt);
+  fruitGame.spawnIn -= dt;
+  if (fruitGame.spawnIn <= 0) {
+    spawnFruit();
+    if (Math.random() > .68 && fruitGame.seconds > 4) spawnFruit();
+    fruitGame.spawnIn = .52 + Math.random() * .3;
+  }
+  fruitGame.fruits.forEach(fruit => {
+    fruit.vy += 830 * dt;
+    fruit.x += fruit.vx * dt;
+    fruit.y += fruit.vy * dt;
+    fruit.angle += fruit.rotation * dt;
+    if (fruit.sliced) fruit.sliceAge += dt;
+  });
+  fruitGame.particles.forEach(particle => {
+    particle.vy += 590 * dt;
+    particle.x += particle.vx * dt;
+    particle.y += particle.vy * dt;
+    particle.life -= dt;
+  });
+  fruitGame.fruits = fruitGame.fruits.filter(fruit => fruit.y < FRUIT_HEIGHT + 80 && fruit.x > -80 && fruit.x < FRUIT_WIDTH + 80 && fruit.sliceAge < .8);
+  fruitGame.particles = fruitGame.particles.filter(particle => particle.life > 0);
+  if (performance.now() > fruitGame.comboUntil) fruitGame.combo = 0;
+  if (fruitGame.seconds <= 0) finishFruitSlice();
+  drawFruitSlice();
+  if (fruitGame.running) fruitFrameId = requestAnimationFrame(runFruitSlice);
+}
+
+function drawFruitSlice(){
+  if (!fruitGame) return;
+  const ctx = fruitSliceCtx;
+  ctx.clearRect(0, 0, FRUIT_WIDTH, FRUIT_HEIGHT);
+  const bg = ctx.createLinearGradient(0, 0, 0, FRUIT_HEIGHT);
+  bg.addColorStop(0, '#FFF8EF'); bg.addColorStop(1, '#F5D7B0');
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, FRUIT_WIDTH, FRUIT_HEIGHT);
+  ctx.fillStyle = 'rgba(255,255,255,.55)';
+  for (let i = 0; i < 7; i++) ctx.beginPath(), ctx.arc(48 + i * 96, 68 + (i % 2) * 36, 24, 0, Math.PI * 2), ctx.fill();
+  fruitGame.fruits.forEach(fruit => {
+    ctx.save(); ctx.translate(fruit.x, fruit.y); ctx.rotate(fruit.angle);
+    if (fruit.sliced) {
+      const spread = Math.min(16, fruit.sliceAge * 42);
+      ctx.fillStyle = fruit.color;
+      ctx.beginPath(); ctx.arc(-spread, 0, fruit.r, Math.PI / 2, Math.PI * 1.5); ctx.fill();
+      ctx.beginPath(); ctx.arc(spread, 0, fruit.r, -Math.PI / 2, Math.PI / 2); ctx.fill();
+      ctx.strokeStyle = '#FFF7E6'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-spread, -fruit.r); ctx.lineTo(-spread, fruit.r); ctx.moveTo(spread, -fruit.r); ctx.lineTo(spread, fruit.r); ctx.stroke();
+    } else {
+      ctx.fillStyle = fruit.color;
+      ctx.beginPath(); ctx.arc(0, 0, fruit.r, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.beginPath(); ctx.arc(-fruit.r * .3, -fruit.r * .3, fruit.r * .24, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#558653'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(0, -fruit.r); ctx.quadraticCurveTo(6, -fruit.r - 14, 13, -fruit.r - 9); ctx.stroke();
+    }
+    ctx.restore();
+  });
+  fruitGame.particles.forEach(particle => {
+    ctx.globalAlpha = Math.max(0, particle.life / .7);
+    ctx.fillStyle = particle.color;
+    ctx.beginPath(); ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2); ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = '#172033'; ctx.font = '700 20px "Space Grotesk", sans-serif'; ctx.textAlign = 'left';
+  ctx.fillText(`SLICES ${fruitGame.score}`, 18, 32);
+  ctx.textAlign = 'right'; ctx.fillText(`${Math.ceil(fruitGame.seconds)}s`, FRUIT_WIDTH - 18, 32);
+  ctx.fillStyle = '#F0D0AC'; ctx.fillRect(18, 46, FRUIT_WIDTH - 36, 7);
+  ctx.fillStyle = '#E26363'; ctx.fillRect(18, 46, (FRUIT_WIDTH - 36) * (fruitGame.seconds / 30), 7);
+  if (fruitGame.combo > 1) {
+    ctx.textAlign = 'center'; ctx.fillStyle = '#B0271E'; ctx.font = '700 24px "Space Grotesk", sans-serif';
+    ctx.fillText(`${fruitGame.combo} COMBO!`, FRUIT_WIDTH / 2, 82);
+  }
+}
+
+function setFruitSliceOpen(open){
+  if (!open && drawing) finishStroke();
+  fruitSliceModal.classList.toggle('open', open);
+  fruitSliceModal.setAttribute('aria-hidden', String(!open));
+  if (open) {
+    getGameAudio();
+    newFruitSliceGame();
+    closeFruitSliceBtn.focus();
+  } else {
+    cancelAnimationFrame(fruitFrameId);
+    if (fruitGame) fruitGame.running = false;
+    gamesHubBtn.focus();
+  }
+}
+
+closeFruitSliceBtn.addEventListener('click', () => setFruitSliceOpen(false));
+closeFruitSliceFooterBtn.addEventListener('click', () => { setFruitSliceOpen(false); setGamesHubOpen(true); });
+newFruitSliceGameBtn.addEventListener('click', newFruitSliceGame);
+fruitSoundBtn.addEventListener('click', () => {
+  gameSoundEnabled = !gameSoundEnabled;
+  fruitSoundBtn.textContent = `Sound: ${gameSoundEnabled ? 'On' : 'Off'}`;
+  if (gameSoundEnabled) playGameSound('select');
+});
+fruitSliceModal.addEventListener('click', event => {
+  if (event.target === fruitSliceModal) setFruitSliceOpen(false);
+});
+
+// ---- Games hub ----
+const gamesHubBtn = document.getElementById('gamesHubBtn');
+const gamesHubModal = document.getElementById('gamesHubModal');
+const closeGamesHubBtn = document.getElementById('closeGamesHubBtn');
+const closeGamesHubFooterBtn = document.getElementById('closeGamesHubFooterBtn');
+const hubTicTacToeBtn = document.getElementById('hubTicTacToeBtn');
+const hubTableTennisBtn = document.getElementById('hubTableTennisBtn');
+const hubRunnerBtn = document.getElementById('hubRunnerBtn');
+const hubFruitSliceBtn = document.getElementById('hubFruitSliceBtn');
+const resetGameScoresBtn = document.getElementById('resetGameScoresBtn');
+const hubTicTacToeScore = document.getElementById('hubTicTacToeScore');
+const hubTableTennisScore = document.getElementById('hubTableTennisScore');
+const hubRunnerScore = document.getElementById('hubRunnerScore');
+const hubFruitSliceScore = document.getElementById('hubFruitSliceScore');
+
+function updateGamesHub(){
+  hubTicTacToeScore.textContent = `${gameScores.ticTacToeWins} wins in ${gameScores.ticTacToeGames} games`;
+  hubTableTennisScore.textContent = `${gameScores.tableTennisWins} match wins · best ${gameScores.tableTennisBest}/5`;
+  hubRunnerScore.textContent = `best run: ${gameScores.runnerBest}`;
+  hubFruitSliceScore.textContent = `best round: ${gameScores.fruitSliceBest} slices`;
+}
+
+function setGamesHubOpen(open){
+  if (!open && drawing) finishStroke();
+  gamesHubModal.classList.toggle('open', open);
+  gamesHubModal.setAttribute('aria-hidden', String(!open));
+  if (open) {
+    updateGamesHub();
+    closeGamesHubBtn.focus();
+  } else {
+    gamesHubBtn.focus();
+  }
+}
+
+gamesHubBtn.addEventListener('click', () => setGamesHubOpen(true));
+closeGamesHubBtn.addEventListener('click', () => setGamesHubOpen(false));
+closeGamesHubFooterBtn.addEventListener('click', () => setGamesHubOpen(false));
+hubTicTacToeBtn.addEventListener('click', () => { setGamesHubOpen(false); setTicTacToeOpen(true); });
+hubTableTennisBtn.addEventListener('click', () => { setGamesHubOpen(false); setTableTennisOpen(true); });
+hubRunnerBtn.addEventListener('click', () => { setGamesHubOpen(false); setRunnerOpen(true); });
+hubFruitSliceBtn.addEventListener('click', () => { setGamesHubOpen(false); setFruitSliceOpen(true); });
+resetGameScoresBtn.addEventListener('click', () => {
+  gameScores = {ticTacToeWins:0, ticTacToeGames:0, tableTennisWins:0, tableTennisBest:0, runnerBest:0, fruitSliceBest:0};
+  runnerBestScore = 0;
+  saveGameScores();
+});
+gamesHubModal.addEventListener('click', event => {
+  if (event.target === gamesHubModal) setGamesHubOpen(false);
+});
+updateGamesHub();
+
 function isDrawKey(code){
   return code === 'Space' || code === 'Enter';
 }
@@ -1001,10 +1929,17 @@ const CURSOR_DEADBAND_PX = 2;
 // so a still fingertip is heavily smoothed (no jitter) while a fast stroke
 // stays responsive (no lag/rigidity). Much steadier than a fixed-rate lerp.
 class OneEuroFilter{
-  constructor({minCutoff = 0.8, beta = 0.012, dCutoff = 1.0} = {}){
+  constructor({minCutoff = 0.8, beta = 0.012, dCutoff = 1.0, maxCutoff = 12} = {}){
     this.minCutoff = minCutoff;
     this.beta = beta;
     this.dCutoff = dCutoff;
+    // Ceiling on how responsive the filter is allowed to get. Without this,
+    // fast strokes push the adaptive cutoff so high the filter becomes near
+    // raw pass-through right when the tracker's own positional noise (motion
+    // blur, landmark jitter) is at its worst - which is what reads as
+    // overshoot/"wide" letters on quick horizontal movement. Capping it keeps
+    // a small amount of corrective smoothing even at speed.
+    this.maxCutoff = maxCutoff;
     this.xPrev = null;
     this.dxPrev = 0;
     this.tPrev = null;
@@ -1013,7 +1948,15 @@ class OneEuroFilter{
     const tau = 1 / (2 * Math.PI * cutoff);
     return 1 / (1 + tau / dt);
   }
-  filter(x, t){
+  // `scale` normalizes the velocity term only (not the position), so two
+  // filters covering different pixel ranges (e.g. a wide board's X axis vs
+  // its shorter Y axis) treat "one board-width per second" and "one
+  // board-height per second" as the same speed. Without this, the axis with
+  // more pixels to cover reads the same real hand speed as numerically
+  // faster, gets a higher adaptive cutoff, and ends up less smoothed than
+  // the other axis - which is what turns a straight vertical stroke into a
+  // visibly tilted one.
+  filter(x, t, scale = 1){
     if (this.tPrev === null) { this.tPrev = t; this.xPrev = x; return x; }
     const dt = Math.max((t - this.tPrev) / 1000, 1 / 120);
     this.tPrev = t;
@@ -1021,7 +1964,8 @@ class OneEuroFilter{
     const aD = OneEuroFilter.alpha(this.dCutoff, dt);
     const dxHat = aD * dx + (1 - aD) * this.dxPrev;
     this.dxPrev = dxHat;
-    const cutoff = this.minCutoff + this.beta * Math.abs(dxHat);
+    const normalizedSpeed = Math.abs(dxHat) / Math.max(scale, 1);
+    const cutoff = Math.min(this.minCutoff + this.beta * normalizedSpeed, this.maxCutoff);
     const a = OneEuroFilter.alpha(cutoff, dt);
     const xHat = a * x + (1 - a) * this.xPrev;
     this.xPrev = xHat;
@@ -1031,9 +1975,10 @@ class OneEuroFilter{
 }
 // Touchscreen-like responsiveness, with a little more baseline smoothing
 // than pure 1:1 tracking so slow, careful movement doesn't read every last
-// bit of camera jitter as intentional.
-const filterX = new OneEuroFilter({minCutoff:0.45, beta:0.03});
-const filterY = new OneEuroFilter({minCutoff:0.45, beta:0.03});
+// bit of camera jitter as intentional. beta/maxCutoff are tuned in
+// "board-widths per second" units now (see `scale` above), not raw pixels.
+const filterX = new OneEuroFilter({minCutoff:0.45, beta:9, maxCutoff:9});
+const filterY = new OneEuroFilter({minCutoff:0.45, beta:9, maxCutoff:9});
 
 function setTrackingState(locked, message, state){
   vf.classList.toggle('locked', locked);
@@ -1173,7 +2118,10 @@ function boardPoint(landmark){
     y:rollingAverage(rawHistoryY, raw.y, RAW_SMOOTHING_WINDOW)
   };
   const now = performance.now();
-  const filtered = {x:filterX.filter(averaged.x, now), y:filterY.filter(averaged.y, now)};
+  const filtered = {
+    x:filterX.filter(averaged.x, now, rect.width),
+    y:filterY.filter(averaged.y, now, rect.height)
+  };
   if (!cursorPoint) {
     cursorPoint = filtered;
     return cursorPoint;
@@ -1183,11 +2131,14 @@ function boardPoint(landmark){
   const distance = Math.hypot(dx, dy);
   if (distance <= CURSOR_DEADBAND_PX) return cursorPoint;
   // Keep fast strokes responsive, with a little more control for small moves.
+  // The top end is intentionally kept just under 1 (not a hard snap) so
+  // there's always a sliver of trailing smoothing left to catch the small
+  // overshoot fast strokes tend to have, without adding noticeable lag.
   const gain =
     distance < 3 ? .75 :
     distance < 10 ? .87 :
-    distance < 20 ? .96 :
-    1;
+    distance < 20 ? .93 :
+    .93;
   cursorPoint = {
     x:Math.max(0, Math.min(rect.width, cursorPoint.x + dx * gain)),
     y:Math.max(0, Math.min(rect.height, cursorPoint.y + dy * gain))
@@ -1210,7 +2161,7 @@ function showCursor(point, pinching){
 
 function controlAt(point){
   const element = document.elementFromPoint(point.x, point.y);
-  const control = element?.closest('header button, .swatch, #colorWheelBtn, .color-wheel-popover canvas, .color-wheel-popover input');
+  const control = element?.closest('header button, .swatch, #colorWheelBtn, .color-wheel-popover canvas, .color-wheel-popover input, .game-modal button');
   return control && !control.disabled ? control : null;
 }
 
@@ -1311,6 +2262,10 @@ function updateGesture(point, dashboardCursor, pinchDistance, rawPinchDistance){
   // Keyboard mode cannot select dashboard controls, so skip this expensive
   // layout hit-test on every video frame while the user is writing.
   const control = currentMode === 'thumb-index' ? controlAt(dashboardCursor) : null;
+  const gameOpen = ticTacToeModal.classList.contains('open') || tableTennisModal.classList.contains('open') || runnerModal.classList.contains('open') || fruitSliceModal.classList.contains('open') || gamesHubModal.classList.contains('open');
+  if (tableTennisModal.classList.contains('open')) updateTableTennisPaddle(dashboardCursor);
+  if (runnerModal.classList.contains('open')) updateRunnerLane(dashboardCursor);
+  if (fruitSliceModal.classList.contains('open')) updateFruitSlice(dashboardCursor);
   setHoveredControl(control);
 
   if (currentMode === 'thumb-index') {
@@ -1354,7 +2309,9 @@ function updateGesture(point, dashboardCursor, pinchDistance, rawPinchDistance){
         gestureTarget = control;
         if (gestureTarget) {
           gestureTarget.click();
-        } else if (isOverBoard(dashboardCursor)) {
+        } else if (runnerModal.classList.contains('open')) {
+          requestRunnerJump();
+        } else if (!gameOpen && isOverBoard(dashboardCursor)) {
           drawing = true;
           currentStroke = [{...point}];
           lastDrawPoint = {...point};
@@ -1382,7 +2339,7 @@ function updateGesture(point, dashboardCursor, pinchDistance, rawPinchDistance){
         lastDrawPoint = {...point};
       }
     }
-  } else if (drawKeyHeld) {
+  } else if (drawKeyHeld && !gameOpen) {
     if (!drawing && isOverBoard(dashboardCursor)) {
       drawing = true;
       currentStroke = [{...point}];
