@@ -142,10 +142,13 @@
   .game-hub-card em{position:relative;z-index:1;margin:3px 0 7px;font-size:10px;font-style:normal;color:var(--text-mute);line-height:1.4;}
   .game-hub-card span{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-mute);line-height:1.45;}
   .game-hub-card:hover span,.game-hub-card:hover em{color:inherit;}
-  .game-hub-card.tic{background:#E8F0FF;}.game-hub-card.ping{background:#E6F8EF;}.game-hub-card.runner{background:#FFF0DF;}.game-hub-card.fruit{background:#FCE9F0;}
+  .game-hub-card.tic{background:#E8F0FF;}.game-hub-card.ping{background:#E6F8EF;}.game-hub-card.runner{background:#FFF0DF;}.game-hub-card.fruit{background:#FCE9F0;}.game-hub-card.snake{background:#E7F5CE;}
   .fruit-dialog{width:min(94vw,500px);}
   .fruit-court{display:block;width:100%;aspect-ratio:10/7;margin:0 auto 12px;border:1px solid var(--hairline);border-radius:10px;background:#FDF3E7;}
   .fruit-help{margin:0 0 12px!important;font-family:'JetBrains Mono',monospace;font-size:10px!important;line-height:1.45;}
+  .snake-dialog{width:min(94vw,500px);}
+  .snake-court{display:block;width:100%;aspect-ratio:1;margin:0 auto 12px;border:1px solid #A3C476;border-radius:10px;background:#DDECC3;touch-action:none;image-rendering:pixelated;}
+  .snake-help{margin:0 0 12px!important;font-family:'JetBrains Mono',monospace;font-size:10px!important;line-height:1.45;}
   @media (max-width:520px){.game-hub-grid{grid-template-columns:1fr;}.game-hub-card{min-height:108px;}}
 
   .thickness-group{display:flex;align-items:center;gap:6px;}
@@ -453,10 +456,29 @@
       <button type="button" class="btn game-hub-card ping" id="hubTableTennisBtn"><b class="game-hub-icon">🏓</b><strong>Table Tennis</strong><em>Guide your paddle with your hand.</em><span id="hubTableTennisScore">Loading…</span></button>
       <button type="button" class="btn game-hub-card runner" id="hubRunnerBtn"><b class="game-hub-icon">🏃</b><strong>Endless Runner</strong><em>Change lane and pinch to jump.</em><span id="hubRunnerScore">Loading…</span></button>
       <button type="button" class="btn game-hub-card fruit" id="hubFruitSliceBtn"><b class="game-hub-icon">🍉</b><strong>Fruit Slice</strong><em>Swipe your fingertip through fruit.</em><span id="hubFruitSliceScore">Loading…</span></button>
+      <button type="button" class="btn game-hub-card snake" id="hubSnakeBtn"><b class="game-hub-icon">🐍</b><strong>Snake</strong><em>Swipe your fingertip to steer.</em><span id="hubSnakeScore">Loading…</span></button>
     </div>
     <div class="game-actions">
       <button type="button" class="btn ghost" id="resetGameScoresBtn">Reset scores</button>
       <button type="button" class="btn primary" id="closeGamesHubFooterBtn">Back to board</button>
+    </div>
+  </div>
+</div>
+
+<div class="game-modal" id="snakeModal" role="dialog" aria-modal="true" aria-labelledby="snakeTitle" aria-hidden="true">
+  <div class="game-dialog snake-dialog">
+    <div class="game-dialog-header">
+      <div>
+        <h2 id="snakeTitle">Snake</h2>
+        <p class="snake-help">Swipe your index fingertip up, down, left, or right to steer. Collect the red pixels and avoid the walls and yourself.</p>
+      </div>
+      <button type="button" class="btn ghost game-close" id="closeSnakeBtn" aria-label="Close Snake">×</button>
+    </div>
+    <div class="game-status" id="snakeStatus" aria-live="polite">Swipe your fingertip to start</div>
+    <canvas class="snake-court" id="snakeCourt" width="480" height="480" aria-label="Gesture-controlled Snake game"></canvas>
+    <div class="game-actions">
+      <button type="button" class="btn primary" id="newSnakeGameBtn">New game</button>
+      <button type="button" class="btn ghost" id="closeSnakeFooterBtn">Back to hub</button>
     </div>
   </div>
 </div>
@@ -952,9 +974,9 @@ document.getElementById('clearBtn').addEventListener('click', ()=>{
 const GAME_SCORES_KEY = 'gesture-draw-game-scores-v1';
 function loadGameScores(){
   try {
-    return {...{ticTacToeWins:0, ticTacToeGames:0, tableTennisWins:0, tableTennisBest:0, runnerBest:0, fruitSliceBest:0}, ...JSON.parse(localStorage.getItem(GAME_SCORES_KEY) || '{}')};
+    return {...{ticTacToeWins:0, ticTacToeGames:0, tableTennisWins:0, tableTennisBest:0, runnerBest:0, fruitSliceBest:0, snakeBest:0}, ...JSON.parse(localStorage.getItem(GAME_SCORES_KEY) || '{}')};
   } catch {
-    return {ticTacToeWins:0, ticTacToeGames:0, tableTennisWins:0, tableTennisBest:0, runnerBest:0, fruitSliceBest:0};
+    return {ticTacToeWins:0, ticTacToeGames:0, tableTennisWins:0, tableTennisBest:0, runnerBest:0, fruitSliceBest:0, snakeBest:0};
   }
 }
 let gameScores = loadGameScores();
@@ -1141,6 +1163,7 @@ document.addEventListener('keydown', event => {
   if (event.key === 'Escape' && tableTennisModal.classList.contains('open')) setTableTennisOpen(false);
   if (event.key === 'Escape' && runnerModal.classList.contains('open')) setRunnerOpen(false);
   if (event.key === 'Escape' && fruitSliceModal.classList.contains('open')) setFruitSliceOpen(false);
+  if (event.key === 'Escape' && snakeModal.classList.contains('open')) setSnakeOpen(false);
   if (event.key === 'Escape' && gamesHubModal.classList.contains('open')) setGamesHubOpen(false);
 });
 
@@ -1484,6 +1507,165 @@ runnerModal.addEventListener('click', event => {
   if (event.target === runnerModal) setRunnerOpen(false);
 });
 
+// ---- Snake: steer a classic grid snake with fingertip swipes ----
+const snakeModal = document.getElementById('snakeModal');
+const snakeCourt = document.getElementById('snakeCourt');
+const snakeCtx = snakeCourt.getContext('2d');
+const snakeStatus = document.getElementById('snakeStatus');
+const closeSnakeBtn = document.getElementById('closeSnakeBtn');
+const closeSnakeFooterBtn = document.getElementById('closeSnakeFooterBtn');
+const newSnakeGameBtn = document.getElementById('newSnakeGameBtn');
+const SNAKE_GRID = 20;
+const SNAKE_CELL = snakeCourt.width / SNAKE_GRID;
+let snakeGame = null;
+let snakeTimer = null;
+let snakeGestureStart = null;
+
+function randomSnakeFood(body){
+  const open = [];
+  for (let y = 0; y < SNAKE_GRID; y++) for (let x = 0; x < SNAKE_GRID; x++) {
+    if (!body.some(part => part.x === x && part.y === y)) open.push({x, y});
+  }
+  return open[Math.floor(Math.random() * open.length)];
+}
+
+function newSnakeGame(){
+  clearInterval(snakeTimer);
+  const body = [{x:10,y:10},{x:9,y:10},{x:8,y:10}];
+  snakeGame = {body, direction:{x:1,y:0}, queuedDirection:{x:1,y:0}, gestureDirection:{x:1,y:0}, food:randomSnakeFood(body), score:0, running:true, speed:145};
+  snakeGestureStart = null;
+  snakeStatus.textContent = 'Swipe your fingertip to steer';
+  drawSnake();
+  snakeTimer = setInterval(stepSnake, snakeGame.speed);
+}
+
+function queueSnakeDirection(x, y){
+  if (!snakeGame?.running) return false;
+  const current = snakeGame.direction;
+  if (x === -current.x && y === -current.y) return false;
+  snakeGame.queuedDirection = {x, y};
+  snakeGame.gestureDirection = {x, y};
+  return true;
+}
+
+function updateSnakeGesture(cursor){
+  if (!snakeGame?.running) return;
+  // The on-board gesture pointer stays fixed at the centre of Snake. The
+  // hand is used only as a directional controller, so it can move anywhere
+  // in the camera view instead of having to track the canvas itself.
+  const point = {x:cursor.x, y:cursor.y};
+  if (!snakeGestureStart) { snakeGestureStart = point; return; }
+  const dx = point.x - snakeGestureStart.x;
+  const dy = point.y - snakeGestureStart.y;
+  const swipeDistance = Math.hypot(dx, dy);
+  if (swipeDistance < 24) return;
+  const changed = Math.abs(dx) > Math.abs(dy)
+    ? queueSnakeDirection(dx > 0 ? 1 : -1, 0)
+    : queueSnakeDirection(0, dy > 0 ? 1 : -1);
+  if (changed) snakeStatus.textContent = 'Direction locked — move once more to turn again';
+  // Re-anchor after a single recognized movement. Holding the hand still now
+  // keeps the chosen direction; another short movement is needed to turn.
+  snakeGestureStart = point;
+}
+
+function endSnakeGame(){
+  snakeGame.running = false;
+  clearInterval(snakeTimer);
+  gameScores.snakeBest = Math.max(gameScores.snakeBest, snakeGame.score);
+  saveGameScores();
+  snakeStatus.textContent = `Game over — score: ${snakeGame.score}. Best: ${gameScores.snakeBest}`;
+  playGameSound('lose');
+  drawSnake();
+}
+
+function stepSnake(){
+  if (!snakeGame?.running || !snakeModal.classList.contains('open')) return;
+  snakeGame.direction = snakeGame.queuedDirection;
+  const head = snakeGame.body[0];
+  const next = {x:head.x + snakeGame.direction.x, y:head.y + snakeGame.direction.y};
+  const willEat = next.x === snakeGame.food.x && next.y === snakeGame.food.y;
+  const bodyToCheck = willEat ? snakeGame.body : snakeGame.body.slice(0, -1);
+  if (next.x < 0 || next.x >= SNAKE_GRID || next.y < 0 || next.y >= SNAKE_GRID || bodyToCheck.some(part => part.x === next.x && part.y === next.y)) {
+    endSnakeGame();
+    return;
+  }
+  snakeGame.body.unshift(next);
+  if (willEat) {
+    snakeGame.score++;
+    snakeGame.food = randomSnakeFood(snakeGame.body);
+    snakeStatus.textContent = `${snakeGame.score} collected — keep swiping to steer`;
+    playGameSound('slice');
+  } else snakeGame.body.pop();
+  drawSnake();
+}
+
+function drawSnake(){
+  if (!snakeGame) return;
+  snakeCtx.clearRect(0, 0, snakeCourt.width, snakeCourt.height);
+  snakeCtx.fillStyle = '#DDECC3';
+  snakeCtx.fillRect(0, 0, snakeCourt.width, snakeCourt.height);
+  snakeCtx.strokeStyle = 'rgba(69,103,51,.12)';
+  snakeCtx.lineWidth = 1;
+  for (let i = 0; i <= SNAKE_GRID; i++) {
+    snakeCtx.beginPath(); snakeCtx.moveTo(i * SNAKE_CELL, 0); snakeCtx.lineTo(i * SNAKE_CELL, snakeCourt.height); snakeCtx.stroke();
+    snakeCtx.beginPath(); snakeCtx.moveTo(0, i * SNAKE_CELL); snakeCtx.lineTo(snakeCourt.width, i * SNAKE_CELL); snakeCtx.stroke();
+  }
+  const foodX = snakeGame.food.x * SNAKE_CELL + SNAKE_CELL / 2;
+  const foodY = snakeGame.food.y * SNAKE_CELL + SNAKE_CELL / 2;
+  snakeCtx.fillStyle = '#D94A4A';
+  snakeCtx.beginPath(); snakeCtx.arc(foodX, foodY, SNAKE_CELL * .32, 0, Math.PI * 2); snakeCtx.fill();
+  snakeGame.body.forEach((part, index) => {
+    snakeCtx.fillStyle = index === 0 ? '#255F39' : '#3E8B52';
+    snakeCtx.fillRect(part.x * SNAKE_CELL + 2, part.y * SNAKE_CELL + 2, SNAKE_CELL - 4, SNAKE_CELL - 4);
+  });
+  const head = snakeGame.body[0];
+  snakeCtx.fillStyle = '#FFF';
+  const eyeOffset = SNAKE_CELL * .26;
+  snakeCtx.fillRect(head.x * SNAKE_CELL + eyeOffset, head.y * SNAKE_CELL + eyeOffset, 3, 3);
+  snakeCtx.fillRect(head.x * SNAKE_CELL + SNAKE_CELL - eyeOffset - 3, head.y * SNAKE_CELL + eyeOffset, 3, 3);
+  snakeCtx.fillStyle = '#172033'; snakeCtx.font = '700 18px "JetBrains Mono", monospace'; snakeCtx.textAlign = 'left';
+  snakeCtx.fillText(`SCORE ${snakeGame.score}`, 12, 24);
+  snakeCtx.textAlign = 'right'; snakeCtx.fillText(`BEST ${gameScores.snakeBest}`, snakeCourt.width - 12, 24);
+  // A fixed directional pointer makes it clear that this is joystick-style
+  // control, rather than a cursor the player must keep moving across the game.
+  const pointerX = snakeCourt.width / 2, pointerY = snakeCourt.height / 2;
+  const direction = snakeGame.gestureDirection;
+  snakeCtx.save();
+  snakeCtx.globalAlpha = .72;
+  snakeCtx.fillStyle = '#F8FFF0'; snakeCtx.beginPath(); snakeCtx.arc(pointerX, pointerY, 23, 0, Math.PI * 2); snakeCtx.fill();
+  snakeCtx.strokeStyle = '#527C40'; snakeCtx.lineWidth = 2; snakeCtx.beginPath(); snakeCtx.arc(pointerX, pointerY, 23, 0, Math.PI * 2); snakeCtx.stroke();
+  snakeCtx.fillStyle = '#255F39'; snakeCtx.font = '700 22px sans-serif'; snakeCtx.textAlign = 'center';
+  snakeCtx.fillText(direction.x === 1 ? '→' : direction.x === -1 ? '←' : direction.y === -1 ? '↑' : '↓', pointerX, pointerY + 8);
+  snakeCtx.restore();
+  if (!snakeGame.running) {
+    snakeCtx.fillStyle = 'rgba(23,32,51,.58)'; snakeCtx.fillRect(0, 0, snakeCourt.width, snakeCourt.height);
+    snakeCtx.fillStyle = '#FFF'; snakeCtx.font = '700 30px "Space Grotesk", sans-serif'; snakeCtx.textAlign = 'center';
+    snakeCtx.fillText('GAME OVER', snakeCourt.width / 2, snakeCourt.height / 2);
+  }
+}
+
+function setSnakeOpen(open){
+  if (!open && drawing) finishStroke();
+  snakeModal.classList.toggle('open', open);
+  snakeModal.setAttribute('aria-hidden', String(!open));
+  if (open) {
+    getGameAudio();
+    newSnakeGame();
+    closeSnakeBtn.focus();
+  } else {
+    clearInterval(snakeTimer);
+    if (snakeGame) snakeGame.running = false;
+    gamesHubBtn.focus();
+  }
+}
+
+closeSnakeBtn.addEventListener('click', () => setSnakeOpen(false));
+closeSnakeFooterBtn.addEventListener('click', () => { setSnakeOpen(false); setGamesHubOpen(true); });
+newSnakeGameBtn.addEventListener('click', newSnakeGame);
+snakeModal.addEventListener('click', event => {
+  if (event.target === snakeModal) setSnakeOpen(false);
+});
+
 // ---- Fruit Slice: sweep your fingertip through fruit before time runs out ----
 const fruitSliceModal = document.getElementById('fruitSliceModal');
 const fruitSliceCourt = document.getElementById('fruitSliceCourt');
@@ -1685,17 +1867,20 @@ const hubTicTacToeBtn = document.getElementById('hubTicTacToeBtn');
 const hubTableTennisBtn = document.getElementById('hubTableTennisBtn');
 const hubRunnerBtn = document.getElementById('hubRunnerBtn');
 const hubFruitSliceBtn = document.getElementById('hubFruitSliceBtn');
+const hubSnakeBtn = document.getElementById('hubSnakeBtn');
 const resetGameScoresBtn = document.getElementById('resetGameScoresBtn');
 const hubTicTacToeScore = document.getElementById('hubTicTacToeScore');
 const hubTableTennisScore = document.getElementById('hubTableTennisScore');
 const hubRunnerScore = document.getElementById('hubRunnerScore');
 const hubFruitSliceScore = document.getElementById('hubFruitSliceScore');
+const hubSnakeScore = document.getElementById('hubSnakeScore');
 
 function updateGamesHub(){
   hubTicTacToeScore.textContent = `${gameScores.ticTacToeWins} wins in ${gameScores.ticTacToeGames} games`;
   hubTableTennisScore.textContent = `${gameScores.tableTennisWins} match wins · best ${gameScores.tableTennisBest}/5`;
   hubRunnerScore.textContent = `best run: ${gameScores.runnerBest}`;
   hubFruitSliceScore.textContent = `best round: ${gameScores.fruitSliceBest} slices`;
+  hubSnakeScore.textContent = `best score: ${gameScores.snakeBest}`;
 }
 
 function setGamesHubOpen(open){
@@ -1717,8 +1902,9 @@ hubTicTacToeBtn.addEventListener('click', () => { setGamesHubOpen(false); setTic
 hubTableTennisBtn.addEventListener('click', () => { setGamesHubOpen(false); setTableTennisOpen(true); });
 hubRunnerBtn.addEventListener('click', () => { setGamesHubOpen(false); setRunnerOpen(true); });
 hubFruitSliceBtn.addEventListener('click', () => { setGamesHubOpen(false); setFruitSliceOpen(true); });
+hubSnakeBtn.addEventListener('click', () => { setGamesHubOpen(false); setSnakeOpen(true); });
 resetGameScoresBtn.addEventListener('click', () => {
-  gameScores = {ticTacToeWins:0, ticTacToeGames:0, tableTennisWins:0, tableTennisBest:0, runnerBest:0, fruitSliceBest:0};
+  gameScores = {ticTacToeWins:0, ticTacToeGames:0, tableTennisWins:0, tableTennisBest:0, runnerBest:0, fruitSliceBest:0, snakeBest:0};
   runnerBestScore = 0;
   saveGameScores();
 });
@@ -2294,10 +2480,11 @@ function updateGesture(point, dashboardCursor, pinchDistance, rawPinchDistance){
   // Keyboard mode cannot select dashboard controls, so skip this expensive
   // layout hit-test on every video frame while the user is writing.
   const control = currentMode === 'thumb-index' ? controlAt(dashboardCursor) : null;
-  const gameOpen = ticTacToeModal.classList.contains('open') || tableTennisModal.classList.contains('open') || runnerModal.classList.contains('open') || fruitSliceModal.classList.contains('open') || gamesHubModal.classList.contains('open');
+  const gameOpen = ticTacToeModal.classList.contains('open') || tableTennisModal.classList.contains('open') || runnerModal.classList.contains('open') || fruitSliceModal.classList.contains('open') || snakeModal.classList.contains('open') || gamesHubModal.classList.contains('open');
   if (tableTennisModal.classList.contains('open')) updateTableTennisPaddle(dashboardCursor);
   if (runnerModal.classList.contains('open')) updateRunnerLane(dashboardCursor);
   if (fruitSliceModal.classList.contains('open')) updateFruitSlice(dashboardCursor);
+  if (snakeModal.classList.contains('open')) updateSnakeGesture(dashboardCursor);
   setHoveredControl(control);
 
   if (currentMode === 'thumb-index') {
