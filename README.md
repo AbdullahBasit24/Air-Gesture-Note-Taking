@@ -1,24 +1,34 @@
-# Gesture Draw — Air Gesture Note-Taking
+# Gesture Draw: Air Gesture Note-Taking
 
-A webcam-based whiteboard and gesture arcade. Draw in the air with your index finger, then take a break with small games controlled by the same hand tracking.
+A webcam-powered whiteboard and gesture arcade. Draw in the air with your index finger, save notes as PNG snapshots, then take a break with small games controlled by the same hand tracking.
 
 Built for the [Devpost OpenAI Build Week](https://openai.devpost.com/) hackathon. The app is fully client-side: it does not require an API key, backend, Vercel, or an AI service.
+
+## What Gesture Draw aims to fix
+
+Traditional note-taking needs a keyboard, a stylus, or a surface to write on. Gesture Draw explores a more natural alternative: writing in mid-air with a webcam. It focuses on reducing common air-writing frustrations such as shaky strokes, accidental pinch triggers, release hooks, cursor-to-hand misalignment, lost tracking near camera edges, and the lack of an easy way to keep or share a quick sketch.
 
 ## Drawing
 
 | Mode | How it works |
 | --- | --- |
-| **Thumb–index (default)** | Pinch thumb and index to put the pen down; separate them to lift the pen. Pinch over controls to use them. |
+| **Thumb-index (default)** | Pinch thumb and index to put the pen down; separate them to lift the pen. Pinch over controls to use them. |
 | **Keyboard index** | Switch modes, hold **Space** or **Enter**, then move your index fingertip to draw. |
 
-The board preserves the raw air-drawn ink. It includes undo, clear, eraser, ink colors and a custom color wheel, thickness control, zoom, and saved note thumbnails.
+The board preserves raw air-drawn ink and includes:
+
+- Undo, clear, eraser, ink colors, a custom color wheel, thickness control, and zoom.
+- Live webcam preview with hand landmarks, camera status, framing guidance, and gesture hover feedback.
+- Saved note thumbnails, plus one-click PNG downloads for every saved snapshot.
+- Thumb-index pinch controls for drawing and selecting controls, plus keyboard-index mode for accessibility and testing.
 
 ### Writing refinements
 
-- Hand-size-normalized pinch detection with separate down/up thresholds prevents accidental stroke flicker.
-- A soft release and tail trim reduce hooks as a pinch opens.
-- Landmark smoothing, a rolling average, and an axis-normalized One Euro filter make slow lettering steady while keeping fast strokes responsive.
-- Adaptive cursor gain, a small deadband, point spacing, curve rendering, and strict straight-line assist help retain intended letter shapes without changing the raw drawing into a font.
+- Hand-size-normalized pinch detection with separate down and up thresholds prevents accidental stroke flicker.
+- Pinch settling, soft release, and tail trimming reduce hooks at the beginning and end of letters.
+- Landmark smoothing, rolling averages, a One Euro filter, and a cursor deadband reduce jitter during slow, precise handwriting.
+- Linear board mapping keeps diagonal motion predictable, while safe camera margins let users reach board edges before their hand reaches the webcam edge.
+- Point spacing, curve rendering, and strict straight-line assist retain intended letter shapes without turning raw writing into a font.
 - Live segments render as the hand moves; the full canvas redraw happens only when a stroke ends.
 
 ## Games Hub
@@ -55,7 +65,7 @@ Requirements: a recent Chromium-based browser, a webcam, and internet access for
 
 1. Start the camera and confirm the 21-point hand overlay follows one hand.
 2. Pinch, draw a few letters, and release. Try both drawing modes.
-3. Test undo, eraser, color, thickness, zoom, saved notes, and pinch-to-click controls.
+3. Test undo, eraser, color, thickness, zoom, saved notes, PNG downloads, and pinch-to-click controls.
 4. Open Games Hub and verify the gesture controls for each game; Snake responds to clear fingertip swipes.
 
 ## Codex collaboration
